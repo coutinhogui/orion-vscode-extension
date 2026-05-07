@@ -47,8 +47,9 @@ function testHelpViewHasModernSections(): void {
   assert.ok(html.includes('Ações rápidas'));
   assert.ok(html.includes('Templates'));
   assert.ok(html.includes('Governança'));
-  assert.ok(html.includes('IA configuravel'));
-  assert.ok(html.includes('Modelos por seleção'));
+  assert.ok(html.includes('Instalação'));
+  assert.ok(html.includes('IA verificando'));
+  assert.ok(html.includes('<details open>'));
   assert.ok(html.includes('Configurar IA'));
   assert.ok(html.includes('Primeiro uso'));
   assert.ok(html.includes('Modelos Ollama'));
@@ -59,11 +60,14 @@ function testHelpViewHasModernSections(): void {
   assert.ok(html.includes('orion.showLogs'));
   assert.ok(html.includes('IA ativa'));
   assert.ok(html.includes('orion-ai-mode'));
+  assert.ok(html.includes('orion-extension-version'));
+  assert.ok(html.includes('orion-extension-path'));
+  assert.ok(html.includes('orion-workspace-config-path'));
   assert.ok(html.includes('getAiStatus'));
   assert.ok(html.includes('orion.configureAi'));
   assert.ok(html.includes('orion.selectOllamaModel'));
   assert.ok(html.includes('#CC092F'));
-  assert.ok(html.includes('Bradesco principal'));
+  assert.ok(html.includes('Riscos, integrações, operações e normas'));
 }
 
 function testIconUsesBradescoInspiredPalette(): void {

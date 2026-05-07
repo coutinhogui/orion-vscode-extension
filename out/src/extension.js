@@ -47,7 +47,7 @@ function activate(context) {
     aiStatus.tooltip = 'Configurar IA da ORION e selecionar modelo Ollama instalado';
     aiStatus.command = 'orion.configureAi';
     aiStatus.show();
-    context.subscriptions.push(aiStatus, vscode.window.registerWebviewViewProvider(helpView_1.OrionHelpViewProvider.viewType, new helpView_1.OrionHelpViewProvider()));
+    context.subscriptions.push(aiStatus, vscode.window.registerWebviewViewProvider(helpView_1.OrionHelpViewProvider.viewType, new helpView_1.OrionHelpViewProvider(context)));
 }
 function deactivate() {
     // Nao ha recursos persistentes para liberar.

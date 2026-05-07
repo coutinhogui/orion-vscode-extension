@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.10
+
+- Reorganizado o painel ORION em seções recolhíveis no estilo explorer.
+- Reduzidas ações rápidas duplicadas e movidas ações específicas para seus grupos.
+- Adicionada seção `Instalação` com versão, caminho da extensão, storage e arquivo de configuração do workspace.
+
 ## 0.1.9
 
 - Corrigida a configuracao de IA para salvar no escopo efetivo quando o workspace ja define `orion.ai.mode`.

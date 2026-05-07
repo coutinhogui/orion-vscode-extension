@@ -13,7 +13,7 @@ export function activate(context: vscode.ExtensionContext): void {
   aiStatus.show();
   context.subscriptions.push(
     aiStatus,
-    vscode.window.registerWebviewViewProvider(OrionHelpViewProvider.viewType, new OrionHelpViewProvider())
+    vscode.window.registerWebviewViewProvider(OrionHelpViewProvider.viewType, new OrionHelpViewProvider(context))
   );
 }
 

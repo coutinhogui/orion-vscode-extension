@@ -47,8 +47,9 @@ function testHelpViewHasModernSections() {
     strict_1.default.ok(html.includes('Ações rápidas'));
     strict_1.default.ok(html.includes('Templates'));
     strict_1.default.ok(html.includes('Governança'));
-    strict_1.default.ok(html.includes('IA configuravel'));
-    strict_1.default.ok(html.includes('Modelos por seleção'));
+    strict_1.default.ok(html.includes('Instalação'));
+    strict_1.default.ok(html.includes('IA verificando'));
+    strict_1.default.ok(html.includes('<details open>'));
     strict_1.default.ok(html.includes('Configurar IA'));
     strict_1.default.ok(html.includes('Primeiro uso'));
     strict_1.default.ok(html.includes('Modelos Ollama'));
@@ -59,11 +60,14 @@ function testHelpViewHasModernSections() {
     strict_1.default.ok(html.includes('orion.showLogs'));
     strict_1.default.ok(html.includes('IA ativa'));
     strict_1.default.ok(html.includes('orion-ai-mode'));
+    strict_1.default.ok(html.includes('orion-extension-version'));
+    strict_1.default.ok(html.includes('orion-extension-path'));
+    strict_1.default.ok(html.includes('orion-workspace-config-path'));
     strict_1.default.ok(html.includes('getAiStatus'));
     strict_1.default.ok(html.includes('orion.configureAi'));
     strict_1.default.ok(html.includes('orion.selectOllamaModel'));
     strict_1.default.ok(html.includes('#CC092F'));
-    strict_1.default.ok(html.includes('Bradesco principal'));
+    strict_1.default.ok(html.includes('Riscos, integrações, operações e normas'));
 }
 function testIconUsesBradescoInspiredPalette() {
     const icon = (0, node_fs_1.readFileSync)('resources/orion.svg', 'utf8');

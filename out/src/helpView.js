@@ -36,30 +36,36 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrionHelpViewProvider = void 0;
 exports.getAiStatus = getAiStatus;
 const vscode = __importStar(require("vscode"));
+const path = __importStar(require("path"));
 const helpHtml_1 = require("./helpHtml");
 const ollama_1 = require("./ollama");
 class OrionHelpViewProvider {
+    context;
     static viewType = 'orionHelp';
+    constructor(context) {
+        this.context = context;
+    }
     resolveWebviewView(webviewView) {
         webviewView.webview.options = { enableScripts: true };
         webviewView.webview.html = (0, helpHtml_1.renderOrionHelpHtml)();
         webviewView.webview.onDidReceiveMessage(async (message) => {
             if (message.command === 'getAiStatus') {
-                await webviewView.webview.postMessage(await getAiStatus());
+                await webviewView.webview.postMessage(await getAiStatus(this.context));
                 return;
             }
             if (message.command) {
                 await vscode.commands.executeCommand(message.command);
-                await webviewView.webview.postMessage(await getAiStatus());
+                await webviewView.webview.postMessage(await getAiStatus(this.context));
             }
         });
     }
 }
 exports.OrionHelpViewProvider = OrionHelpViewProvider;
-async function getAiStatus() {
+async function getAiStatus(context) {
     const mode = vscode.workspace.getConfiguration('orion.ai').get('mode', 'auto');
     const baseUrl = vscode.workspace.getConfiguration('orion.ollama').get('baseUrl', 'http://localhost:11434');
     const configuredModel = vscode.workspace.getConfiguration('orion.ollama').get('model', 'qwen2.5-coder:3b');
+    const runtime = getRuntimeInfo(context);
     if (mode !== 'ollama' && mode !== 'auto') {
         return {
             type: 'aiStatus',
@@ -67,7 +73,8 @@ async function getAiStatus() {
             model: configuredModel,
             baseUrl,
             status: mode === 'local' ? 'modo local ativo' : 'sem teste Ollama',
-            ok: mode === 'local'
+            ok: mode === 'local',
+            ...runtime
         };
     }
     const probe = await (0, ollama_1.probeOllamaConnection)(baseUrl);
@@ -78,7 +85,8 @@ async function getAiStatus() {
             model: configuredModel,
             baseUrl,
             status: 'Ollama desconectado',
-            ok: false
+            ok: false,
+            ...runtime
         };
     }
     const resolvedModel = (0, ollama_1.chooseOllamaModel)(configuredModel, probe.models);
@@ -88,7 +96,17 @@ async function getAiStatus() {
         model: resolvedModel === configuredModel ? configuredModel : `${resolvedModel} (auto)`,
         baseUrl,
         status: probe.models.includes(configuredModel) ? 'conectado' : 'modelo configurado ausente',
-        ok: true
+        ok: true,
+        ...runtime
+    };
+}
+function getRuntimeInfo(context) {
+    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    return {
+        version: String(context.extension.packageJSON.version ?? 'desconhecida'),
+        extensionPath: context.extensionUri.fsPath,
+        globalStoragePath: context.globalStorageUri.fsPath,
+        workspaceConfigPath: workspaceRoot ? path.join(workspaceRoot, '.vscode', 'settings.json') : 'sem workspace aberto'
     };
 }
 //# sourceMappingURL=helpView.js.map

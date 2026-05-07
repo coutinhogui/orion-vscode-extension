@@ -7,19 +7,17 @@ export function renderOrionHelpHtml(): string {
   <style>
     :root {
       --orion-bg: var(--vscode-sideBar-background, #111114);
-      --orion-panel: color-mix(in srgb, var(--vscode-sideBar-background, #111114) 84%, #2a151b);
-      --orion-panel-2: color-mix(in srgb, var(--vscode-sideBar-background, #111114) 70%, #3a1b24);
+      --orion-panel: color-mix(in srgb, var(--vscode-sideBar-background, #111114) 86%, #2a151b);
+      --orion-panel-2: color-mix(in srgb, var(--vscode-sideBar-background, #111114) 72%, #3a1b24);
       --orion-text: var(--vscode-sideBar-foreground, #e7edf5);
       --orion-muted: var(--vscode-descriptionForeground, #9ca9ba);
       --orion-line: var(--vscode-sideBar-border, #2a333e);
       --orion-red: #CC092F;
       --orion-red-strong: #99000F;
-      --orion-red-light: #E60935;
       --orion-pink: #F7A6B7;
-      --orion-silver: #D7DCE2;
+      --orion-blue: #5AA9FF;
       --orion-green: #34d399;
       --orion-amber: #F7B500;
-      --orion-blue: #0B67BE;
     }
 
     * { box-sizing: border-box; }
@@ -31,172 +29,201 @@ export function renderOrionHelpHtml(): string {
       color: var(--orion-text);
       font-family: var(--vscode-font-family);
       font-size: var(--vscode-font-size);
-      line-height: 1.45;
+      line-height: 1.42;
     }
 
     .masthead {
-      padding: 18px 16px 16px;
+      padding: 16px 14px 13px;
       background:
-        linear-gradient(135deg, rgba(204, 9, 47, 0.34), rgba(153, 0, 15, 0.2) 52%, rgba(247, 166, 183, 0.12)),
+        linear-gradient(135deg, rgba(204, 9, 47, 0.3), rgba(153, 0, 15, 0.18) 54%, rgba(247, 166, 183, 0.1)),
         var(--orion-panel);
       border-bottom: 1px solid var(--orion-line);
     }
 
-    .brand { display: flex; gap: 12px; align-items: center; }
+    .brand {
+      display: flex;
+      gap: 11px;
+      align-items: center;
+    }
 
     .mark {
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
+      width: 39px;
+      height: 39px;
+      border-radius: 9px;
       display: grid;
       place-items: center;
       background: linear-gradient(145deg, var(--orion-red), var(--orion-red-strong));
       border: 1px solid rgba(255, 255, 255, 0.22);
-      position: relative;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0;
       flex: 0 0 auto;
     }
 
-    .mark::before {
-      content: "";
-      width: 25px;
-      height: 17px;
-      border: 3px solid #fff;
-      border-bottom: 0;
-      border-radius: 15px 15px 0 0;
-      position: absolute;
-      top: 10px;
-    }
-
-    .mark::after {
-      content: "";
-      width: 18px;
-      height: 4px;
-      border-radius: 3px;
-      background: #fff;
-      position: absolute;
-      bottom: 11px;
-    }
-
     .title { min-width: 0; }
-    .title h1 { margin: 0; font-size: 18px; line-height: 1.1; letter-spacing: 0; }
+    .title h1 { margin: 0; font-size: 17px; line-height: 1.1; letter-spacing: 0; }
     .title p { margin: 4px 0 0; color: var(--orion-muted); font-size: 12px; }
 
-    .status { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .status {
+      margin-top: 13px;
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
 
     .pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      min-height: 24px;
+      min-height: 23px;
       padding: 3px 8px;
       border: 1px solid var(--orion-line);
       border-radius: 6px;
-      background: rgba(16, 19, 23, 0.56);
+      background: rgba(16, 19, 23, 0.52);
       color: var(--orion-muted);
       font-size: 12px;
       white-space: nowrap;
     }
 
     .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--orion-green); }
-    .content { padding: 14px; }
-    .section { padding: 12px 0; border-bottom: 1px solid var(--orion-line); }
-    .section:first-child { padding-top: 0; }
-    .section:last-child { border-bottom: 0; }
+    .tree { padding: 7px 0 14px; }
 
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 9px;
+    details {
+      border-bottom: 1px solid color-mix(in srgb, var(--orion-line) 72%, transparent);
     }
 
-    .section-title {
-      color: color-mix(in srgb, var(--orion-text) 82%, var(--orion-blue));
+    summary {
+      min-height: 34px;
+      padding: 7px 12px;
+      display: grid;
+      grid-template-columns: 18px 1fr auto;
+      align-items: center;
+      gap: 5px;
+      cursor: default;
+      list-style: none;
+      color: color-mix(in srgb, var(--orion-text) 88%, var(--orion-blue));
       font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.07em;
       text-transform: uppercase;
+      user-select: none;
     }
 
-    .section-count { color: var(--orion-muted); font-size: 11px; }
+    summary::-webkit-details-marker { display: none; }
+    summary:hover { background: rgba(255, 255, 255, 0.035); }
 
-    .session {
+    .chevron::before {
+      content: ">";
+      color: var(--orion-muted);
+      display: inline-block;
+      transform: rotate(0deg);
+      transition: transform 140ms ease;
+    }
+
+    details[open] .chevron::before { transform: rotate(90deg); }
+
+    .count {
+      color: var(--orion-muted);
+      font-size: 11px;
+      letter-spacing: 0;
+      text-transform: none;
+      font-weight: 600;
+    }
+
+    .item,
+    .action {
+      width: 100%;
+      min-height: 36px;
+      padding: 6px 12px 6px 30px;
       display: grid;
-      grid-template-columns: 4px 1fr auto;
-      gap: 10px;
+      grid-template-columns: 22px minmax(0, 1fr) auto;
       align-items: center;
-      min-height: 48px;
-      padding: 9px 10px;
-      background: var(--orion-panel);
-      border: 1px solid var(--orion-line);
-      border-radius: 8px;
-      margin-bottom: 8px;
+      gap: 7px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--orion-text);
+      text-align: left;
+      font: inherit;
     }
 
-    .bar { width: 4px; height: 28px; border-radius: 2px; background: var(--orion-blue); }
-    .bar.amber { background: var(--orion-amber); }
-    .bar.pink { background: var(--orion-pink); }
-    .session strong { display: block; font-size: 13px; font-weight: 650; }
-    .session span { color: var(--orion-muted); display: block; margin-top: 1px; font-size: 12px; }
+    .action { cursor: pointer; }
+    .item:hover,
+    .action:hover { background: rgba(255, 255, 255, 0.04); }
+    .item.active { background: rgba(204, 9, 47, 0.16); box-shadow: inset 3px 0 0 var(--orion-red); }
 
-    .kbd {
+    .icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      display: grid;
+      place-items: center;
+      background: var(--orion-panel-2);
+      color: var(--orion-blue);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .icon.red { color: var(--orion-pink); }
+    .icon.amber { color: var(--orion-amber); }
+    .icon.green { color: var(--orion-green); }
+
+    .label { min-width: 0; }
+    .label strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 620;
+      line-height: 1.16;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .label span {
+      display: block;
+      margin-top: 1px;
+      color: var(--orion-muted);
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .kbd,
+    code {
       color: var(--orion-blue);
       font-family: var(--vscode-editor-font-family), ui-monospace, SFMono-Regular, Consolas, monospace;
       font-size: 11px;
     }
 
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-
-    button {
-      min-height: 42px;
-      border: 1px solid var(--orion-line);
-      border-radius: 8px;
-      background: var(--orion-panel);
-      color: var(--orion-text);
-      text-align: left;
-      padding: 8px 9px;
-      font: inherit;
-      cursor: pointer;
-    }
-
-    button:hover { border-color: rgba(56, 189, 248, 0.58); background: var(--orion-panel-2); }
-    button .icon { color: var(--orion-blue); font-weight: 700; margin-right: 5px; }
-    .template-list { display: grid; gap: 7px; }
-
-    .template {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      min-height: 34px;
-      padding: 7px 9px;
-      border-radius: 7px;
-      background: color-mix(in srgb, var(--orion-panel-2) 72%, transparent);
-      border: 1px solid transparent;
-    }
-
-    .template strong { overflow-wrap: anywhere; }
-    .template span { color: var(--orion-muted); font-size: 11px; text-align: right; }
-    .risk-row { display: grid; gap: 7px; }
-    .ai-status { display: grid; gap: 8px; }
-
     .metric {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 8px 0;
+      min-height: 31px;
+      display: grid;
+      grid-template-columns: minmax(78px, 0.42fr) minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 6px 12px 6px 30px;
       color: var(--orion-muted);
     }
 
-    .metric strong { font-weight: 650; white-space: nowrap; }
+    .metric span { font-size: 12px; }
+    .metric strong { color: var(--orion-text); font-weight: 620; }
     .metric code {
       color: var(--orion-text);
-      font-family: var(--vscode-editor-font-family), ui-monospace, SFMono-Regular, Consolas, monospace;
-      font-size: 11px;
       text-align: right;
       overflow-wrap: anywhere;
+      word-break: break-word;
+      line-height: 1.35;
     }
+
+    .footer-note {
+      padding: 10px 12px 0;
+      color: var(--orion-muted);
+      font-size: 11px;
+    }
+
     .accent-blue { color: var(--orion-blue); }
     .accent-amber { color: var(--orion-amber); }
     .accent-red { color: var(--orion-red); }
@@ -205,113 +232,185 @@ export function renderOrionHelpHtml(): string {
 <body>
   <header class="masthead">
     <div class="brand">
-      <div class="mark" aria-hidden="true"></div>
+      <div class="mark" aria-hidden="true">OR</div>
       <div class="title">
         <h1>ORION</h1>
-        <p>Bradesco principal · riscos e engenharia</p>
+        <p>Riscos, integrações, operações e normas</p>
       </div>
     </div>
     <div class="status">
-      <span class="pill"><span class="dot"></span>IA configuravel</span>
-      <span class="pill">Modelos por seleção</span>
-      <span class="pill">@orion ativo</span>
+      <span class="pill"><span class="dot"></span><span id="orion-ai-pill">IA verificando</span></span>
+      <span class="pill">v<span id="orion-version-pill">...</span></span>
+      <span class="pill">@orion</span>
     </div>
   </header>
 
-  <main class="content">
-    <section class="section">
-      <div class="section-header">
-        <div class="section-title">Sessões</div>
-        <div class="section-count">3 fluxos</div>
-      </div>
-        <div class="session">
-        <div class="bar"></div>
-        <div><strong>Chat operacional</strong><span>Governança e padrões Bradesco</span></div>
-        <div class="kbd">/help</div>
-      </div>
-      <div class="session">
-        <div class="bar amber"></div>
-        <div><strong>Setup de workspace</strong><span>VS Code, Copilot e docs</span></div>
-        <div class="kbd">/setup</div>
-      </div>
-      <div class="session">
-        <div class="bar pink"></div>
-        <div><strong>Revisão local</strong><span>Segurança, performance e governança</span></div>
-        <div class="kbd">/review</div>
-      </div>
-    </section>
+  <main class="tree">
+    <details open>
+      <summary>
+        <span class="chevron"></span>
+        <span>Sessões</span>
+        <span class="count">3</span>
+      </summary>
+      <button class="action active" data-command="workbench.panel.chat.view.copilot.focus">
+        <span class="icon red">@</span>
+        <span class="label"><strong>Chat operacional</strong><span>Use @orion com comandos ou conversa livre</span></span>
+        <span class="kbd">/help</span>
+      </button>
+      <button class="action" data-command="orion.setupWorkspace">
+        <span class="icon amber">W</span>
+        <span class="label"><strong>Setup de workspace</strong><span>VS Code, Copilot e padrões locais</span></span>
+        <span class="kbd">/setup</span>
+      </button>
+      <button class="action" data-command="orion.reviewCurrentFile">
+        <span class="icon green">R</span>
+        <span class="label"><strong>Revisão local</strong><span>Segurança, performance e governança</span></span>
+        <span class="kbd">/review</span>
+      </button>
+    </details>
 
-    <section class="section">
-      <div class="section-header"><div class="section-title">Ações rápidas</div></div>
-      <div class="grid">
-        <button data-command="orion.setupWorkspace"><span class="icon">⚙</span>Configurar workspace</button>
-        <button data-command="orion.openFirstUseGuide"><span class="icon">1</span>Primeiro uso</button>
-        <button data-command="orion.reviewCurrentFile"><span class="icon">✓</span>Revisar arquivo</button>
-        <button data-command="orion.configureAi"><span class="icon">◉</span>Configurar IA</button>
-        <button data-command="orion.selectOllamaModel"><span class="icon">⌕</span>Modelos Ollama</button>
-        <button data-command="orion.testOllamaConnection"><span class="icon">?</span>Testar Ollama</button>
-        <button data-command="orion.diagnoseAi"><span class="icon">!</span>Diagnosticar IA</button>
-        <button data-command="orion.showLogs"><span class="icon">≡</span>Abrir logs</button>
-        <button data-command="orion.generateTechnicalDocumentation"><span class="icon">#</span>Gerar docs</button>
-        <button data-command="workbench.panel.chat.view.copilot.focus"><span class="icon">@</span>Abrir @orion</button>
-      </div>
-    </section>
+    <details open>
+      <summary>
+        <span class="chevron"></span>
+        <span>Ações rápidas</span>
+        <span class="count">5</span>
+      </summary>
+      <button class="action" data-command="orion.openFirstUseGuide">
+        <span class="icon">1</span>
+        <span class="label"><strong>Primeiro uso</strong><span>Fluxo de aceite e próximos passos</span></span>
+      </button>
+      <button class="action" data-command="orion.configureAi">
+        <span class="icon">AI</span>
+        <span class="label"><strong>Configurar IA</strong><span>Escolher Auto, Local, Copilot ou Ollama</span></span>
+      </button>
+      <button class="action" data-command="orion.diagnoseAi">
+        <span class="icon amber">D</span>
+        <span class="label"><strong>Diagnosticar IA</strong><span>Relatório de modo, modelo e conectividade</span></span>
+      </button>
+      <button class="action" data-command="orion.showLogs">
+        <span class="icon">L</span>
+        <span class="label"><strong>Abrir logs</strong><span>Canal ORION com eventos recentes</span></span>
+      </button>
+      <button class="action" data-command="orion.generateTechnicalDocumentation">
+        <span class="icon">#</span>
+        <span class="label"><strong>Gerar docs</strong><span>Documentação técnica do workspace</span></span>
+      </button>
+    </details>
 
-    <section class="section">
-      <div class="section-header">
-        <div class="section-title">IA ativa</div>
-        <button data-command="orion.configureAi">Alterar</button>
-      </div>
-      <div class="ai-status">
-        <div class="metric"><span>Modo</span><code id="orion-ai-mode">carregando...</code></div>
-        <div class="metric"><span>Modelo</span><code id="orion-ai-model">carregando...</code></div>
-        <div class="metric"><span>Servidor</span><code id="orion-ai-base-url">carregando...</code></div>
-        <div class="metric"><span>Status</span><strong id="orion-ai-status" class="accent-amber">verificando</strong></div>
-      </div>
-    </section>
+    <details open>
+      <summary>
+        <span class="chevron"></span>
+        <span>IA ativa</span>
+        <span class="count">4</span>
+      </summary>
+      <div class="metric"><span>Modo</span><code id="orion-ai-mode">carregando...</code></div>
+      <div class="metric"><span>Modelo</span><code id="orion-ai-model">carregando...</code></div>
+      <div class="metric"><span>Servidor</span><code id="orion-ai-base-url">carregando...</code></div>
+      <div class="metric"><span>Status</span><strong id="orion-ai-status" class="accent-amber">verificando</strong></div>
+      <button class="action" data-command="orion.selectOllamaModel">
+        <span class="icon">M</span>
+        <span class="label"><strong>Modelos Ollama</strong><span>Selecionar modelo instalado</span></span>
+      </button>
+      <button class="action" data-command="orion.testOllamaConnection">
+        <span class="icon">T</span>
+        <span class="label"><strong>Testar Ollama</strong><span>Validar servidor local configurado</span></span>
+      </button>
+    </details>
 
-    <section class="section">
-      <div class="section-header">
-        <div class="section-title">Templates</div>
-        <div class="section-count">6 stacks</div>
-      </div>
-      <div class="template-list">
-        <div class="template"><strong>Databricks pipeline</strong><span>bronze/silver/gold</span></div>
-        <div class="template"><strong>.NET 8 API</strong><span>minimal API</span></div>
-        <div class="template"><strong>Blazor page</strong><span>loading/erro/vazio</span></div>
-        <div class="template"><strong>Python, SQL, Java</strong><span>checklists locais</span></div>
-      </div>
-    </section>
+    <details>
+      <summary>
+        <span class="chevron"></span>
+        <span>Templates</span>
+        <span class="count">3</span>
+      </summary>
+      <button class="action" data-command="orion.createDatabricksPipeline">
+        <span class="icon">DB</span>
+        <span class="label"><strong>Databricks pipeline</strong><span>Bronze, silver, gold e qualidade</span></span>
+      </button>
+      <button class="action" data-command="orion.createDotnetApi">
+        <span class="icon">.N</span>
+        <span class="label"><strong>.NET 8 API</strong><span>Minimal API básica</span></span>
+      </button>
+      <button class="action" data-command="orion.createBlazorPage">
+        <span class="icon">BZ</span>
+        <span class="label"><strong>Blazor page</strong><span>Loading, erro, vazio e client</span></span>
+      </button>
+    </details>
 
-    <section class="section">
-      <div class="section-header"><div class="section-title">Governança</div></div>
-      <div class="risk-row">
-        <div class="metric"><span>Secrets hardcoded</span><strong class="accent-red">bloquear</strong></div>
-        <div class="metric"><span>Dados sensíveis</span><strong class="accent-amber">validar</strong></div>
-        <div class="metric"><span>Qualidade de dados</span><strong class="accent-blue">exigir</strong></div>
+    <details>
+      <summary>
+        <span class="chevron"></span>
+        <span>Governança</span>
+        <span class="count">3</span>
+      </summary>
+      <div class="item">
+        <span class="icon red">!</span>
+        <span class="label"><strong>Secrets hardcoded</strong><span>Bloquear antes de gerar ou revisar</span></span>
+        <strong class="accent-red">bloquear</strong>
       </div>
-    </section>
+      <div class="item">
+        <span class="icon amber">S</span>
+        <span class="label"><strong>Dados sensíveis</strong><span>CPF, tokens, credenciais e bases internas</span></span>
+        <strong class="accent-amber">validar</strong>
+      </div>
+      <div class="item">
+        <span class="icon green">Q</span>
+        <span class="label"><strong>Qualidade de dados</strong><span>Checks obrigatórios por pipeline</span></span>
+        <strong class="accent-blue">exigir</strong>
+      </div>
+    </details>
+
+    <details open>
+      <summary>
+        <span class="chevron"></span>
+        <span>Instalação</span>
+        <span class="count">4</span>
+      </summary>
+      <div class="metric"><span>Versão</span><code id="orion-extension-version">carregando...</code></div>
+      <div class="metric"><span>Extensão</span><code id="orion-extension-path">carregando...</code></div>
+      <div class="metric"><span>Config</span><code id="orion-workspace-config-path">carregando...</code></div>
+      <div class="metric"><span>Storage</span><code id="orion-storage-path">carregando...</code></div>
+    </details>
+
+    <div class="footer-note">As ações escrevem arquivos no workspace aberto, respeitando as configurações atuais da ORION.</div>
   </main>
 
   <script>
     const vscode = acquireVsCodeApi();
-    document.querySelectorAll('button[data-command]').forEach((button) => {
-      button.addEventListener('click', () => {
-        vscode.postMessage({ command: button.dataset.command });
+    document.querySelectorAll('[data-command]').forEach((element) => {
+      element.addEventListener('click', () => {
+        vscode.postMessage({ command: element.dataset.command });
       });
     });
+
+    function setText(id, value) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.textContent = value || '-';
+      }
+    }
+
     window.addEventListener('message', (event) => {
       const message = event.data;
       if (message.type !== 'aiStatus') {
         return;
       }
-      document.getElementById('orion-ai-mode').textContent = message.mode || '-';
-      document.getElementById('orion-ai-model').textContent = message.model || '-';
-      document.getElementById('orion-ai-base-url').textContent = message.baseUrl || '-';
+
+      setText('orion-ai-mode', message.mode);
+      setText('orion-ai-model', message.model);
+      setText('orion-ai-base-url', message.baseUrl);
+      setText('orion-extension-version', message.version);
+      setText('orion-version-pill', message.version);
+      setText('orion-extension-path', message.extensionPath);
+      setText('orion-workspace-config-path', message.workspaceConfigPath);
+      setText('orion-storage-path', message.globalStoragePath);
+      setText('orion-ai-pill', message.mode ? 'IA ' + message.mode : 'IA');
+
       const status = document.getElementById('orion-ai-status');
       status.textContent = message.status || 'desconhecido';
       status.className = message.ok ? 'accent-blue' : 'accent-red';
     });
+
     vscode.postMessage({ command: 'getAiStatus' });
   </script>
 </body>
