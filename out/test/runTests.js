@@ -114,6 +114,13 @@ function testAiModeResolutionKeepsExplicitLocalMode() {
     strict_1.default.equal((0, aiMode_1.shouldFallbackToLocalAnswer)(true, false), false);
     strict_1.default.equal((0, aiMode_1.shouldFallbackToLocalAnswer)(false, true), true);
 }
+function testConfigurationUpdateScopeFollowsActiveOverride() {
+    strict_1.default.equal((0, aiMode_1.resolveConfigurationUpdateScope)(undefined), 'global');
+    strict_1.default.equal((0, aiMode_1.resolveConfigurationUpdateScope)({}), 'global');
+    strict_1.default.equal((0, aiMode_1.resolveConfigurationUpdateScope)({ workspaceValue: 'auto' }), 'workspace');
+    strict_1.default.equal((0, aiMode_1.resolveConfigurationUpdateScope)({ workspaceFolderValue: 'auto' }), 'workspaceFolder');
+    strict_1.default.equal((0, aiMode_1.resolveConfigurationUpdateScope)({ workspaceValue: 'auto', workspaceFolderValue: 'ollama' }), 'workspaceFolder');
+}
 function testOllamaFallbackMessage() {
     const message = (0, ollama_1.buildOllamaFallbackMessage)('qwen2.5:3b', 'http://localhost:11434');
     strict_1.default.ok(message.includes('Nao foi possivel obter resposta do Ollama'));
@@ -195,6 +202,7 @@ function run() {
     testOllamaHelpers();
     testResourceIntentDetection();
     testAiModeResolutionKeepsExplicitLocalMode();
+    testConfigurationUpdateScopeFollowsActiveOverride();
     testOllamaFallbackMessage();
     testChooseOllamaModel();
     testBuildOllamaModelQuickPickItems();

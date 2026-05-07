@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.9
+
+- Corrigida a configuracao de IA para salvar no escopo efetivo quando o workspace ja define `orion.ai.mode`.
+- A escolha `Copilot` agora sobrescreve corretamente o `auto` de `.vscode/settings.json`, evitando que conversa livre continue resolvendo para Ollama.
+
 ## 0.1.8
 
 - Adicionado comando `ORION: Guia Rapido de Primeiro Uso`.

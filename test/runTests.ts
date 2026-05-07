@@ -6,7 +6,7 @@ import { buildDatabricksPipelineFiles, buildDotnetApiFiles } from '../src/templa
 import { renderOrionHelpHtml } from '../src/helpHtml';
 import { buildOllamaChatRequest, buildOllamaFallbackMessage, buildOllamaModelQuickPickItems, buildOllamaReviewRequest, chooseOllamaModel, normalizeOllamaBaseUrl } from '../src/ollama';
 import { buildConversationReply } from '../src/conversation';
-import { shouldFallbackToLocalAnswer, resolveAiMode } from '../src/aiMode';
+import { shouldFallbackToLocalAnswer, resolveAiMode, resolveConfigurationUpdateScope } from '../src/aiMode';
 import { detectResourceIntent } from '../src/resourceIntent';
 import { buildAiDiagnosticsReport } from '../src/diagnostics';
 import { formatLogEntry, summarizeText } from '../src/logging';
@@ -120,6 +120,14 @@ function testAiModeResolutionKeepsExplicitLocalMode(): void {
   assert.equal(shouldFallbackToLocalAnswer(false, true), true);
 }
 
+function testConfigurationUpdateScopeFollowsActiveOverride(): void {
+  assert.equal(resolveConfigurationUpdateScope(undefined), 'global');
+  assert.equal(resolveConfigurationUpdateScope({}), 'global');
+  assert.equal(resolveConfigurationUpdateScope({ workspaceValue: 'auto' }), 'workspace');
+  assert.equal(resolveConfigurationUpdateScope({ workspaceFolderValue: 'auto' }), 'workspaceFolder');
+  assert.equal(resolveConfigurationUpdateScope({ workspaceValue: 'auto', workspaceFolderValue: 'ollama' }), 'workspaceFolder');
+}
+
 function testOllamaFallbackMessage(): void {
   const message = buildOllamaFallbackMessage('qwen2.5:3b', 'http://localhost:11434');
   assert.ok(message.includes('Nao foi possivel obter resposta do Ollama'));
@@ -208,6 +216,7 @@ function run(): void {
   testOllamaHelpers();
   testResourceIntentDetection();
   testAiModeResolutionKeepsExplicitLocalMode();
+  testConfigurationUpdateScopeFollowsActiveOverride();
   testOllamaFallbackMessage();
   testChooseOllamaModel();
   testBuildOllamaModelQuickPickItems();

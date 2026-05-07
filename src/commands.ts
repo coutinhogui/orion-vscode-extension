@@ -6,6 +6,7 @@ import { buildOllamaModelQuickPickItems, chooseOllamaModel, generateOllamaRespon
 import { buildAiDiagnosticsReport } from './diagnostics';
 import { logOrion, showOrionLogs } from './output';
 import { buildFirstUseGuide } from './firstUseGuide';
+import { OrionConfigurationUpdateScope, resolveConfigurationUpdateScope } from './aiMode';
 
 export function registerCommands(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
@@ -167,7 +168,7 @@ export async function configureAiCommand(): Promise<string> {
     return await configureOllamaCommand();
   }
 
-  await vscode.workspace.getConfiguration('orion.ai').update('mode', selected.mode, vscode.ConfigurationTarget.Global);
+  await updateOrionConfiguration('orion.ai', 'mode', selected.mode);
   const message = `ORION configurada em modo ${selected.mode}.`;
   vscode.window.showInformationMessage(message);
   return message;
@@ -175,7 +176,6 @@ export async function configureAiCommand(): Promise<string> {
 
 async function configureOllamaCommand(): Promise<string> {
   const ollamaConfig = vscode.workspace.getConfiguration('orion.ollama');
-  const aiConfig = vscode.workspace.getConfiguration('orion.ai');
   const configuredBaseUrl = ollamaConfig.get<string>('baseUrl', 'http://localhost:11434');
   const currentModel = ollamaConfig.get<string>('model', 'qwen2.5-coder:3b');
   const baseUrl = await vscode.window.showInputBox({
@@ -214,9 +214,9 @@ async function configureOllamaCommand(): Promise<string> {
     return 'Selecao de modelo Ollama cancelada.';
   }
 
-  await aiConfig.update('mode', 'ollama', vscode.ConfigurationTarget.Global);
-  await ollamaConfig.update('model', selected.label, vscode.ConfigurationTarget.Global);
-  await ollamaConfig.update('baseUrl', baseUrl, vscode.ConfigurationTarget.Global);
+  await updateOrionConfiguration('orion.ai', 'mode', 'ollama');
+  await updateOrionConfiguration('orion.ollama', 'model', selected.label);
+  await updateOrionConfiguration('orion.ollama', 'baseUrl', baseUrl);
   const testAnswer = await generateOllamaResponse(baseUrl, selected.label, 'Responda apenas OK.', 'Teste de configuracao ORION.');
   const tested = /\bok\b/i.test(testAnswer);
   const message = tested
@@ -239,4 +239,27 @@ function summarizeFiles(prefix: string, files: readonly string[]): string {
     return `${prefix}: nenhum arquivo alterado porque todos ja existiam.`;
   }
   return `${prefix}: ${files.length} arquivo(s) gravado(s).`;
+}
+
+async function updateOrionConfiguration(section: string, key: string, value: string): Promise<void> {
+  const resource = getConfigurationResource();
+  const config = vscode.workspace.getConfiguration(section, resource);
+  const target = toConfigurationTarget(resolveConfigurationUpdateScope(config.inspect(key)));
+  await config.update(key, value, target);
+  logOrion('info', 'configuration updated', { key: `${section}.${key}`, target: String(target) });
+}
+
+function getConfigurationResource(): vscode.Uri | undefined {
+  return vscode.window.activeTextEditor?.document.uri ?? vscode.workspace.workspaceFolders?.[0]?.uri;
+}
+
+function toConfigurationTarget(scope: OrionConfigurationUpdateScope): vscode.ConfigurationTarget {
+  switch (scope) {
+    case 'workspaceFolder':
+      return vscode.ConfigurationTarget.WorkspaceFolder;
+    case 'workspace':
+      return vscode.ConfigurationTarget.Workspace;
+    default:
+      return vscode.ConfigurationTarget.Global;
+  }
 }

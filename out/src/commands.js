@@ -54,6 +54,7 @@ const ollama_1 = require("./ollama");
 const diagnostics_1 = require("./diagnostics");
 const output_1 = require("./output");
 const firstUseGuide_1 = require("./firstUseGuide");
+const aiMode_1 = require("./aiMode");
 function registerCommands(context) {
     context.subscriptions.push(vscode.commands.registerCommand('orion.openHelp', () => vscode.commands.executeCommand('orionHelp.focus')), vscode.commands.registerCommand('orion.openFirstUseGuide', openFirstUseGuideCommand), vscode.commands.registerCommand('orion.showLogs', output_1.showOrionLogs), vscode.commands.registerCommand('orion.setupWorkspace', setupWorkspaceCommand), vscode.commands.registerCommand('orion.reviewCurrentFile', reviewCurrentFileCommand), vscode.commands.registerCommand('orion.createDatabricksPipeline', createDatabricksPipelineCommand), vscode.commands.registerCommand('orion.generateCopilotInstructions', generateCopilotInstructionsCommand), vscode.commands.registerCommand('orion.generateTechnicalDocumentation', generateTechnicalDocumentationCommand), vscode.commands.registerCommand('orion.createDotnetApi', createDotnetApiCommand), vscode.commands.registerCommand('orion.createBlazorPage', createBlazorPageCommand), vscode.commands.registerCommand('orion.testOllamaConnection', testOllamaConnectionCommand), vscode.commands.registerCommand('orion.diagnoseAi', diagnoseAiCommand), vscode.commands.registerCommand('orion.configureAi', configureAiCommand), vscode.commands.registerCommand('orion.selectOllamaModel', selectOllamaModelCommand));
 }
@@ -180,14 +181,13 @@ async function configureAiCommand() {
     if (selected.mode === 'ollama') {
         return await configureOllamaCommand();
     }
-    await vscode.workspace.getConfiguration('orion.ai').update('mode', selected.mode, vscode.ConfigurationTarget.Global);
+    await updateOrionConfiguration('orion.ai', 'mode', selected.mode);
     const message = `ORION configurada em modo ${selected.mode}.`;
     vscode.window.showInformationMessage(message);
     return message;
 }
 async function configureOllamaCommand() {
     const ollamaConfig = vscode.workspace.getConfiguration('orion.ollama');
-    const aiConfig = vscode.workspace.getConfiguration('orion.ai');
     const configuredBaseUrl = ollamaConfig.get('baseUrl', 'http://localhost:11434');
     const currentModel = ollamaConfig.get('model', 'qwen2.5-coder:3b');
     const baseUrl = await vscode.window.showInputBox({
@@ -220,9 +220,9 @@ async function configureOllamaCommand() {
     if (!selected) {
         return 'Selecao de modelo Ollama cancelada.';
     }
-    await aiConfig.update('mode', 'ollama', vscode.ConfigurationTarget.Global);
-    await ollamaConfig.update('model', selected.label, vscode.ConfigurationTarget.Global);
-    await ollamaConfig.update('baseUrl', baseUrl, vscode.ConfigurationTarget.Global);
+    await updateOrionConfiguration('orion.ai', 'mode', 'ollama');
+    await updateOrionConfiguration('orion.ollama', 'model', selected.label);
+    await updateOrionConfiguration('orion.ollama', 'baseUrl', baseUrl);
     const testAnswer = await (0, ollama_1.generateOllamaResponse)(baseUrl, selected.label, 'Responda apenas OK.', 'Teste de configuracao ORION.');
     const tested = /\bok\b/i.test(testAnswer);
     const message = tested
@@ -243,5 +243,25 @@ function summarizeFiles(prefix, files) {
         return `${prefix}: nenhum arquivo alterado porque todos ja existiam.`;
     }
     return `${prefix}: ${files.length} arquivo(s) gravado(s).`;
+}
+async function updateOrionConfiguration(section, key, value) {
+    const resource = getConfigurationResource();
+    const config = vscode.workspace.getConfiguration(section, resource);
+    const target = toConfigurationTarget((0, aiMode_1.resolveConfigurationUpdateScope)(config.inspect(key)));
+    await config.update(key, value, target);
+    (0, output_1.logOrion)('info', 'configuration updated', { key: `${section}.${key}`, target: String(target) });
+}
+function getConfigurationResource() {
+    return vscode.window.activeTextEditor?.document.uri ?? vscode.workspace.workspaceFolders?.[0]?.uri;
+}
+function toConfigurationTarget(scope) {
+    switch (scope) {
+        case 'workspaceFolder':
+            return vscode.ConfigurationTarget.WorkspaceFolder;
+        case 'workspace':
+            return vscode.ConfigurationTarget.Workspace;
+        default:
+            return vscode.ConfigurationTarget.Global;
+    }
 }
 //# sourceMappingURL=commands.js.map
