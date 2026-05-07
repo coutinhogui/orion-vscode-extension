@@ -2,7 +2,7 @@
   "name": "orion-vscode",
   "displayName": "ORION",
   "description": "ORION - Orquestrador de Riscos, Integracoes, Operacoes e Normas para equipes de engenharia de dados em banco.",
-  "version": "0.1.13",
+  "version": "0.1.16",
   "publisher": "engenharia-riscos",
   "icon": "resources/orion.png",
   "repository": {
@@ -145,6 +145,36 @@
           "type": "boolean",
           "default": true,
           "description": "Quando true, a ORION volta automaticamente para resposta local se o Ollama falhar."
+        },
+        "orion.internet.mode": {
+          "type": "string",
+          "enum": [
+            "off",
+            "ask",
+            "auto"
+          ],
+          "default": "off",
+          "description": "Politica de uso de internet pela ORION. Padrao off; ask pede autorizacao; auto permite uso governado quando houver ferramenta externa configurada.",
+          "markdownDescription": "Politica de uso de internet pela ORION. **Padrao:** `off`. Use `ask` para exigir autorizacao antes de pesquisar, ou `auto` para permitir uso governado quando houver ferramenta externa configurada."
+        },
+        "orion.docs.mode": {
+          "type": "string",
+          "enum": [
+            "internal",
+            "off"
+          ],
+          "default": "internal",
+          "description": "Fonte governada de documentacao da ORION. Padrao internal para priorizar API interna quando configurada."
+        },
+        "orion.docs.endpoint": {
+          "type": "string",
+          "default": "",
+          "description": "Endpoint HTTP da API interna de documentacao. A ORION envia POST com { query, limit } quando orion.docs.mode = internal."
+        },
+        "orion.docs.requireCitations": {
+          "type": "boolean",
+          "default": true,
+          "description": "Instrui a ORION a usar fontes internas citadas quando a API interna retornar evidencias."
         },
         "orion.templates.overwriteExistingFiles": {
           "type": "boolean",

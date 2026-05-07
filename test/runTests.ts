@@ -12,6 +12,8 @@ import { buildAiDiagnosticsReport } from '../src/diagnostics';
 import { formatLogEntry, summarizeText } from '../src/logging';
 import { buildFirstUseGuide } from '../src/firstUseGuide';
 import { buildAiPanelStatus } from '../src/aiStatus';
+import { buildCopilotPrompt } from '../src/copilot';
+import { buildInternalDocsContext } from '../src/internalDocs';
 
 function testNormalizeName(): void {
   assert.equal(normalizeName('Risco Credito Banco'), 'risco-credito-banco');
@@ -134,6 +136,70 @@ function testAiModeResolutionKeepsExplicitLocalMode(): void {
   assert.equal(shouldFallbackToLocalAnswer(true, true), false);
   assert.equal(shouldFallbackToLocalAnswer(true, false), false);
   assert.equal(shouldFallbackToLocalAnswer(false, true), true);
+}
+
+function testCopilotPromptIncludesOriginalRequestAndHistory(): void {
+  const docsContext = buildInternalDocsContext([
+    {
+      title: 'Padrao Databricks interno',
+      source: 'docs/databricks.md',
+      content: 'Use bronze, silver e gold com reference_date.'
+    }
+  ], true);
+  const prompt = buildCopilotPrompt({
+    command: '',
+    userPrompt: 'pesquise boas praticas para delta lake',
+    localAnswer: 'Resposta local limitada.',
+    internetMode: 'off',
+    internalDocsContext: docsContext,
+    history: [
+      { role: 'user', content: 'quero algo para Databricks' },
+      { role: 'assistant', content: 'Podemos focar em bronze/silver/gold.' }
+    ]
+  });
+
+  assert.ok(prompt.includes('Pedido original do usuario'));
+  assert.ok(prompt.includes('pesquise boas praticas para delta lake'));
+  assert.ok(prompt.includes('Resposta/base local da ORION'));
+  assert.ok(prompt.includes('Resposta local limitada.'));
+  assert.ok(prompt.includes('Historico recente'));
+  assert.ok(prompt.includes('quero algo para Databricks'));
+  assert.ok(prompt.includes('Responda diretamente ao pedido original'));
+  assert.ok(prompt.includes('Politica de internet: off'));
+  assert.ok(prompt.includes('Nao afirme que pesquisou na internet'));
+  assert.ok(prompt.includes('Documentacao interna ORION'));
+  assert.ok(prompt.includes('Padrao Databricks interno'));
+  assert.ok(prompt.includes('Use fontes internas citadas'));
+  assert.equal(prompt.includes('Melhore a resposta abaixo'), false);
+}
+
+function testDocsAndInternetDefaults(): void {
+  const manifest = JSON.parse(readFileSync('package.json', 'utf8')) as {
+    contributes?: { configuration?: { properties?: Record<string, { default?: string | boolean; enum?: string[] }> } };
+  };
+  const internetMode = manifest.contributes?.configuration?.properties?.['orion.internet.mode'];
+  assert.equal(internetMode?.default, 'off');
+  assert.deepEqual(internetMode?.enum, ['off', 'ask', 'auto']);
+
+  const docsMode = manifest.contributes?.configuration?.properties?.['orion.docs.mode'];
+  assert.equal(docsMode?.default, 'internal');
+  assert.deepEqual(docsMode?.enum, ['internal', 'off']);
+  assert.equal(manifest.contributes?.configuration?.properties?.['orion.docs.endpoint']?.default, '');
+  assert.equal(manifest.contributes?.configuration?.properties?.['orion.docs.requireCitations']?.default, true);
+}
+
+function testInternalDocsContextFormatsSources(): void {
+  const context = buildInternalDocsContext([
+    { title: 'Runbook ORION', source: 'runbooks/orion.md', content: 'Sempre validar governanca.' },
+    { title: 'Template API', url: 'https://docs.interna/api', content: 'Use DTO e service.' }
+  ], true);
+
+  assert.ok(context.includes('Documentacao interna ORION'));
+  assert.ok(context.includes('[1] Runbook ORION'));
+  assert.ok(context.includes('Fonte: runbooks/orion.md'));
+  assert.ok(context.includes('[2] Template API'));
+  assert.ok(context.includes('Fonte: https://docs.interna/api'));
+  assert.ok(context.includes('Use fontes internas citadas'));
 }
 
 function testOllamaFallbackMessage(): void {
@@ -294,6 +360,9 @@ function run(): void {
   testOllamaHelpers();
   testResourceIntentDetection();
   testAiModeResolutionKeepsExplicitLocalMode();
+  testCopilotPromptIncludesOriginalRequestAndHistory();
+  testDocsAndInternetDefaults();
+  testInternalDocsContextFormatsSources();
   testOllamaFallbackMessage();
   testChooseOllamaModel();
   testBuildOllamaModelQuickPickItems();

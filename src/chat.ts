@@ -7,6 +7,8 @@ import { resolveAiMode, shouldFallbackToLocalAnswer } from './aiMode';
 import { detectResourceIntent } from './resourceIntent';
 import { summarizeText } from './logging';
 import { logOrion } from './output';
+import { buildCopilotPrompt, OrionInternetMode } from './copilot';
+import { buildInternalDocsContext, OrionDocsMode, retrieveInternalDocs } from './internalDocs';
 
 export function registerChatParticipant(context: vscode.ExtensionContext): void {
   const chatApi = (vscode.chat as any);
@@ -148,19 +150,64 @@ async function maybeUseLanguageModel(request: any, command: string, localAnswer:
   }
 
   try {
+    const internetMode = vscode.workspace.getConfiguration('orion.internet').get<OrionInternetMode>('mode', 'off');
+    const docsConfig = vscode.workspace.getConfiguration('orion.docs');
+    const docsMode = docsConfig.get<OrionDocsMode>('mode', 'internal');
+    const docsEndpoint = docsConfig.get<string>('endpoint', '');
+    const requireCitations = docsConfig.get<boolean>('requireCitations', true);
+    const internalDocsContext = await buildDocsContext(docsMode, docsEndpoint, prompt || localAnswer, requireCitations);
+    if (typeof response.progress === 'function') {
+      response.progress('Consultando Copilot pelo VS Code...');
+    }
+    logOrion('info', 'copilot request started', { command: command || 'free', prompt: summarizeText(prompt), historyTurns: history.length, internetMode, docsMode, docsEndpointConfigured: Boolean(docsEndpoint.trim()) });
     const messages = [
-      vscode.LanguageModelChatMessage.User(`Melhore a resposta abaixo em portugues brasileiro, mantendo seguranca, governanca, modo local por padrao e sem inventar acessos externos.\n\n${localAnswer}`)
+      vscode.LanguageModelChatMessage.User(buildCopilotPrompt({
+        command,
+        userPrompt: prompt,
+        localAnswer,
+        internetMode,
+        internalDocsContext,
+        history
+      }))
     ];
     const result = await request.model.sendRequest(messages, {}, token);
     let text = '';
     for await (const fragment of result.text) {
       text += fragment;
+      response.markdown(fragment);
     }
-    response.markdown(text.trim() || localAnswer);
+    if (!text.trim()) {
+      logOrion('warn', 'copilot response empty; local response used', { command: command || 'free' });
+      response.markdown(localAnswer);
+      return;
+    }
+    logOrion('info', 'copilot response streamed', { command: command || 'free', chars: text.length });
     return;
-  } catch {
-    logOrion('warn', 'copilot request failed; local response used', { command: command || 'free' });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logOrion('warn', 'copilot request failed; local response used', { command: command || 'free', error: message });
     response.markdown(localAnswer);
     return;
+  }
+}
+
+async function buildDocsContext(mode: OrionDocsMode, endpoint: string, query: string, requireCitations: boolean): Promise<string> {
+  if (mode === 'off') {
+    return 'Documentacao interna ORION: desativada por configuracao.';
+  }
+
+  if (!endpoint.trim()) {
+    logOrion('info', 'internal docs skipped: endpoint not configured');
+    return 'Documentacao interna ORION: API interna nao configurada.';
+  }
+
+  try {
+    const results = await retrieveInternalDocs(endpoint, query);
+    logOrion('info', 'internal docs retrieved', { count: results.length });
+    return buildInternalDocsContext(results, requireCitations);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logOrion('warn', 'internal docs retrieval failed', { error: message });
+    return `Documentacao interna ORION: falha ao consultar API interna (${message}).`;
   }
 }

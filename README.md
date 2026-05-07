@@ -4,7 +4,7 @@ ORION - Orquestrador de Riscos, Integracoes, Operacoes e Normas.
 
 Extensao interna para VS Code voltada a equipes de engenharia de dados em banco com foco em riscos financeiros. A extensao funciona localmente por padrao, sem backend externo, sem secrets e sem acesso real a Databricks, producao ou APIs internas.
 
-Versao atual: `0.1.13`.
+Versao atual: `0.1.16`.
 
 ## Recursos
 
@@ -107,7 +107,7 @@ O arquivo `.vsix` gerado pode ser instalado no VS Code por `Extensions: Install 
 Alternativa via CLI do VS Code no Windows:
 
 ```powershell
-& "$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin\code.cmd" --install-extension .\orion-vscode-0.1.13.vsix --force
+& "$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin\code.cmd" --install-extension .\orion-vscode-0.1.16.vsix --force
 ```
 
 Para confirmar a versao instalada:
@@ -137,6 +137,10 @@ Se escolher `Ollama local`, a ORION tambem pede a URL base, consulta `/api/tags`
 - `orion.ollama.model`: modelo local, como `qwen2.5-coder:3b`. Padrao: `qwen2.5-coder:3b`.
 - Se o modelo configurado nao estiver instalado, a ORION tenta usar automaticamente um modelo local disponivel, priorizando `qwen2.5-coder:3b`, `qwen2.5-coder:7b`, `qwen3.5`, `llama3.1:8b`, `granite-code:3b` e `gemma4:e2b`.
 - `orion.ollama.autoFallbackToLocal`: volta para resposta local quando o Ollama falhar. Quando `false`, a ORION informa que o Ollama nao respondeu em vez de mascarar a falha. Padrao: `true`.
+- `orion.docs.mode`: fonte governada de documentacao. Padrao: `internal`. Valores: `internal`, `off`.
+- `orion.docs.endpoint`: endpoint HTTP da API interna de documentacao. Padrao vazio; sem endpoint a ORION nao chama a API.
+- `orion.docs.requireCitations`: instrui a ORION a usar fontes internas citadas quando houver evidencias. Padrao: `true`.
+- `orion.internet.mode`: politica de internet da ORION. Padrao: `off`. Valores: `off`, `ask`, `auto`.
 - `orion.templates.overwriteExistingFiles`: permite sobrescrever templates existentes. Padrao: `false`.
 - `orion.workspace.defaultDataBase`: base logica usada nos templates Databricks. Padrao: `dev_riscos`.
 
@@ -150,10 +154,22 @@ Se um workspace antigo tiver `orion.ai.mode` ou `orion.ollama.*` dentro de `.vsc
 | --- | --- | --- |
 | `auto` | Prioriza recursos ORION quando detecta intencao clara e usa a politica interna para conversa livre. | Mostra politica automatica, sem expor configuracao Ollama como se fosse o modo ativo. |
 | `local` | Usa respostas locais e comandos ORION sem provider de modelo. | Mostra provider local e nao exibe modelo/servidor Ollama. |
-| `copilot` | Usa a Language Model API do VS Code quando o Chat fornece `request.model`. | Mostra Copilot como provider e nao exibe acoes Ollama. |
+| `copilot` | Usa a Language Model API do VS Code quando o Chat fornece `request.model`. Envia o pedido original, a resposta/base local da ORION e o historico recente. | Mostra Copilot como provider e nao exibe acoes Ollama. |
 | `ollama` | Usa servidor Ollama local configurado. | Mostra servidor, modelo resolvido, status e acoes `Modelos Ollama` / `Testar Ollama`. |
 
 O comando `ORION: Diagnosticar IA` tambem respeita o modo. Ele so testa `/api/tags` e `/v1/chat/completions` quando `orion.ai.mode = ollama`.
+
+No modo `copilot`, a ORION nao chama Ollama. A resposta vem do modelo disponibilizado pelo VS Code/Copilot para o Chat, com streaming e fallback local caso esse modelo nao esteja disponivel. A politica `orion.internet.mode` controla se a ORION pode usar contexto externo: por padrao fica `off`, entao ela nao deve afirmar pesquisa na internet.
+
+### Documentacao interna
+
+A ORION prioriza documentacao interna quando `orion.docs.mode = internal`. Para ativar a consulta real, configure `orion.docs.endpoint` com uma API HTTP interna que aceite:
+
+```json
+{ "query": "texto da pergunta", "limit": 5 }
+```
+
+A API pode responder com `results`, `documents` ou `items`, contendo objetos com `title`, `source`, `url`, `content` ou `snippet`. Essas evidencias entram no prompt do modo `copilot` antes de qualquer contexto externo. Internet permanece separada e desligada por padrao.
 
 ## Painel lateral ORION
 
@@ -208,6 +224,24 @@ A ORION consulta `${orion.ollama.baseUrl}/api/tags`, mostra os modelos instalado
 - `orion.ollama.baseUrl = <URL configurada>`
 
 Depois de salvar, a ORION faz um teste rapido com o modelo selecionado e informa se ele respondeu.
+
+## Notas da versao 0.1.16
+
+- Adicionada camada de documentacao interna governada por `orion.docs.mode`, `orion.docs.endpoint` e `orion.docs.requireCitations`.
+- O modo `copilot` passa a consultar a API interna de docs quando `orion.docs.mode = internal` e o endpoint estiver configurado.
+- Evidencias internas retornadas pela API entram no prompt antes de qualquer contexto externo; internet continua `off` por padrao.
+
+## Notas da versao 0.1.15
+
+- Adicionada configuracao `orion.internet.mode` com padrao `off`.
+- O prompt do modo `copilot` agora recebe explicitamente a politica de internet.
+- Com internet `off`, a ORION instrui o Copilot a nao afirmar pesquisa web e a avisar quando o pedido exigir fonte atual externa.
+
+## Notas da versao 0.1.14
+
+- O modo `copilot` agora envia o pedido original, a resposta/base local e o historico recente para o VS Code Language Model API.
+- A resposta do Copilot e transmitida em streaming no chat.
+- Foram adicionados logs especificos para confirmar quando o Copilot foi chamado e quando caiu para fallback local.
 
 ## Notas da versao 0.1.11
 

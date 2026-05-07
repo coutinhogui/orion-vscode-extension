@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.1.16
+
+- Adicionada configuracao de documentacao interna: `orion.docs.mode`, `orion.docs.endpoint` e `orion.docs.requireCitations`.
+- O modo `copilot` agora pode consultar uma API interna de documentacao via POST `{ query, limit }` quando o endpoint estiver configurado.
+- Evidencias internas retornadas pela API passam a compor o prompt do Copilot com instrucao de citacao interna.
+
+## 0.1.15
+
+- Adicionada configuracao `orion.internet.mode` com padrao `off`.
+- O modo `copilot` passa a incluir a politica de internet no prompt enviado ao VS Code Language Model API.
+- Com internet `off`, a ORION instrui o modelo a nao afirmar pesquisa web e a sinalizar quando o pedido exige fonte atual externa.
+
+## 0.1.14
+
+- Melhorado o modo `copilot` para enviar ao VS Code Language Model API o pedido original do usuario, a resposta/base local e o historico recente.
+- O modo `copilot` agora faz streaming da resposta do modelo no chat.
+- Adicionados logs especificos para inicio, streaming, resposta vazia e fallback local do Copilot.
+
 ## 0.1.13
 
 - `ORION: Configurar IA e Selecionar Modelo` agora salva `orion.ai.mode`, `orion.ollama.model` e `orion.ollama.baseUrl` em User Settings.

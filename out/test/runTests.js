@@ -17,6 +17,8 @@ const diagnostics_1 = require("../src/diagnostics");
 const logging_1 = require("../src/logging");
 const firstUseGuide_1 = require("../src/firstUseGuide");
 const aiStatus_1 = require("../src/aiStatus");
+const copilot_1 = require("../src/copilot");
+const internalDocs_1 = require("../src/internalDocs");
 function testNormalizeName() {
     strict_1.default.equal((0, naming_1.normalizeName)('Risco Credito Banco'), 'risco-credito-banco');
     strict_1.default.equal((0, naming_1.normalizeName)('../Prod Secret'), 'prod-secret');
@@ -128,6 +130,62 @@ function testAiModeResolutionKeepsExplicitLocalMode() {
     strict_1.default.equal((0, aiMode_1.shouldFallbackToLocalAnswer)(true, true), false);
     strict_1.default.equal((0, aiMode_1.shouldFallbackToLocalAnswer)(true, false), false);
     strict_1.default.equal((0, aiMode_1.shouldFallbackToLocalAnswer)(false, true), true);
+}
+function testCopilotPromptIncludesOriginalRequestAndHistory() {
+    const docsContext = (0, internalDocs_1.buildInternalDocsContext)([
+        {
+            title: 'Padrao Databricks interno',
+            source: 'docs/databricks.md',
+            content: 'Use bronze, silver e gold com reference_date.'
+        }
+    ], true);
+    const prompt = (0, copilot_1.buildCopilotPrompt)({
+        command: '',
+        userPrompt: 'pesquise boas praticas para delta lake',
+        localAnswer: 'Resposta local limitada.',
+        internetMode: 'off',
+        internalDocsContext: docsContext,
+        history: [
+            { role: 'user', content: 'quero algo para Databricks' },
+            { role: 'assistant', content: 'Podemos focar em bronze/silver/gold.' }
+        ]
+    });
+    strict_1.default.ok(prompt.includes('Pedido original do usuario'));
+    strict_1.default.ok(prompt.includes('pesquise boas praticas para delta lake'));
+    strict_1.default.ok(prompt.includes('Resposta/base local da ORION'));
+    strict_1.default.ok(prompt.includes('Resposta local limitada.'));
+    strict_1.default.ok(prompt.includes('Historico recente'));
+    strict_1.default.ok(prompt.includes('quero algo para Databricks'));
+    strict_1.default.ok(prompt.includes('Responda diretamente ao pedido original'));
+    strict_1.default.ok(prompt.includes('Politica de internet: off'));
+    strict_1.default.ok(prompt.includes('Nao afirme que pesquisou na internet'));
+    strict_1.default.ok(prompt.includes('Documentacao interna ORION'));
+    strict_1.default.ok(prompt.includes('Padrao Databricks interno'));
+    strict_1.default.ok(prompt.includes('Use fontes internas citadas'));
+    strict_1.default.equal(prompt.includes('Melhore a resposta abaixo'), false);
+}
+function testDocsAndInternetDefaults() {
+    const manifest = JSON.parse((0, node_fs_1.readFileSync)('package.json', 'utf8'));
+    const internetMode = manifest.contributes?.configuration?.properties?.['orion.internet.mode'];
+    strict_1.default.equal(internetMode?.default, 'off');
+    strict_1.default.deepEqual(internetMode?.enum, ['off', 'ask', 'auto']);
+    const docsMode = manifest.contributes?.configuration?.properties?.['orion.docs.mode'];
+    strict_1.default.equal(docsMode?.default, 'internal');
+    strict_1.default.deepEqual(docsMode?.enum, ['internal', 'off']);
+    strict_1.default.equal(manifest.contributes?.configuration?.properties?.['orion.docs.endpoint']?.default, '');
+    strict_1.default.equal(manifest.contributes?.configuration?.properties?.['orion.docs.requireCitations']?.default, true);
+}
+function testInternalDocsContextFormatsSources() {
+    const context = (0, internalDocs_1.buildInternalDocsContext)([
+        { title: 'Runbook ORION', source: 'runbooks/orion.md', content: 'Sempre validar governanca.' },
+        { title: 'Template API', url: 'https://docs.interna/api', content: 'Use DTO e service.' }
+    ], true);
+    strict_1.default.ok(context.includes('Documentacao interna ORION'));
+    strict_1.default.ok(context.includes('[1] Runbook ORION'));
+    strict_1.default.ok(context.includes('Fonte: runbooks/orion.md'));
+    strict_1.default.ok(context.includes('[2] Template API'));
+    strict_1.default.ok(context.includes('Fonte: https://docs.interna/api'));
+    strict_1.default.ok(context.includes('Use fontes internas citadas'));
 }
 function testOllamaFallbackMessage() {
     const message = (0, ollama_1.buildOllamaFallbackMessage)('qwen2.5:3b', 'http://localhost:11434');
@@ -274,6 +332,9 @@ function run() {
     testOllamaHelpers();
     testResourceIntentDetection();
     testAiModeResolutionKeepsExplicitLocalMode();
+    testCopilotPromptIncludesOriginalRequestAndHistory();
+    testDocsAndInternetDefaults();
+    testInternalDocsContextFormatsSources();
     testOllamaFallbackMessage();
     testChooseOllamaModel();
     testBuildOllamaModelQuickPickItems();
