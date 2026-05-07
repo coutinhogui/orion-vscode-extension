@@ -1,0 +1,3 @@
+Copyright (c) 2026 Engenharia de Riscos
+
+Uso interno restrito. Esta extensao e seus templates sao destinados ao uso por equipes autorizadas.

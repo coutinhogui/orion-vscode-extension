@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORION Panel Mockup</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101317;
+      --panel: #171b21;
+      --panel-2: #1e242c;
+      --text: #e7edf5;
+      --muted: #9ca9ba;
+      --line: #2a333e;
+      --blue: #38bdf8;
+      --amber: #f59e0b;
+      --green: #34d399;
+      --red: #fb7185;
+      --violet: #a78bfa;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #0c0f13;
+      color: var(--text);
+      font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .sidebar {
+      width: 342px;
+      min-height: 760px;
+      background: var(--bg);
+      border: 1px solid #252d36;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+      overflow: hidden;
+    }
+
+    .masthead {
+      padding: 18px 16px 16px;
+      background:
+        linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(245, 158, 11, 0.12)),
+        var(--panel);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: #202833;
+      border: 1px solid rgba(56, 189, 248, 0.42);
+      position: relative;
+    }
+
+    .mark::before {
+      content: "";
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--blue);
+      border-radius: 50%;
+      position: absolute;
+    }
+
+    .mark::after {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--amber);
+      position: absolute;
+    }
+
+    .title {
+      min-width: 0;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .title p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .status {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 24px;
+      padding: 3px 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: rgba(16, 19, 23, 0.56);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .content {
+      padding: 14px;
+    }
+
+    .section {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:first-child { padding-top: 0; }
+    .section:last-child { border-bottom: 0; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 9px;
+    }
+
+    .section-title {
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .section-count {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .session {
+      display: grid;
+      grid-template-columns: 4px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 48px;
+      padding: 9px 10px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .bar { width: 4px; height: 28px; border-radius: 2px; background: var(--blue); }
+    .bar.amber { background: var(--amber); }
+    .bar.violet { background: var(--violet); }
+
+    .session strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .session span {
+      color: var(--muted);
+      display: block;
+      margin-top: 1px;
+      font-size: 12px;
+    }
+
+    .kbd {
+      color: var(--blue);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 11px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    button {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--text);
+      text-align: left;
+      padding: 8px 9px;
+      font: inherit;
+      cursor: default;
+    }
+
+    button:hover {
+      border-color: rgba(56, 189, 248, 0.58);
+      background: var(--panel-2);
+    }
+
+    button .icon {
+      color: var(--blue);
+      font-weight: 700;
+      margin-right: 5px;
+    }
+
+    .template-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .template {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 7px 9px;
+      border-radius: 7px;
+      background: rgba(30, 36, 44, 0.64);
+      border: 1px solid transparent;
+    }
+
+    .template span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .risk-row {
+      display: grid;
+      gap: 7px;
+    }
+
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      color: var(--muted);
+    }
+
+    .metric strong {
+      color: var(--text);
+      font-weight: 650;
+    }
+
+    .accent-blue { color: var(--blue); }
+    .accent-amber { color: var(--amber); }
+    .accent-red { color: var(--red); }
+  </style>
+</head>
+<body>
+  <aside class="sidebar" aria-label="Painel ORION">
+    <header class="masthead">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div class="title">
+          <h1>ORION</h1>
+          <p>Riscos, integrações, operações e normas</p>
+        </div>
+      </div>
+      <div class="status">
+        <span class="pill"><span class="dot"></span>Modo local</span>
+        <span class="pill">Sem produção</span>
+        <span class="pill">@orion ativo</span>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="section">
+        <div class="section-header">
+          <div class="section-title">Sessões</div>
+          <div class="section-count">3 fluxos</div>
+        </div>
+        <div class="session">
+          <div class="bar"></div>
+          <div>
+            <strong>Chat operacional</strong>
+            <span>Ajuda, padrões e checklist</span>
+          </div>
+          <div class="kbd">/help</div>
+        </div>
+        <div class="session">
+          <div class="bar amber"></div>
+          <div>
+            <strong>Setup de workspace</strong>
+            <span>VS Code, Copilot e docs</span>
+          </div>
+          <div class="kbd">/setup</div>
+        </div>
+        <div class="session">
+          <div class="bar violet"></div>
+          <div>
+            <strong>Revisão local</strong>
+            <span>Segurança, performance e governança</span>
+          </div>
+          <div class="kbd">/review</div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div class="section-title">Ações rápidas</div>
+        </div>
+        <div class="grid">
+          <button><span class="icon">⚙</span>Configurar workspace</button>
+          <button><span class="icon">✓</span>Revisar arquivo</button>
+          <button><span class="icon">#</span>Gerar docs</button>
+          <button><span class="icon">@</span>Abrir @orion</button>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div class="section-title">Templates</div>
+          <div class="section-count">6 stacks</div>
+        </div>
+        <div class="template-list">
+          <div class="template"><strong>Databricks pipeline</strong><span>bronze/silver/gold</span></div>
+          <div class="template"><strong>.NET 8 API</strong><span>minimal API</span></div>
+          <div class="template"><strong>Blazor page</strong><span>loading/erro/vazio</span></div>
+          <div class="template"><strong>Python, SQL, Java</strong><span>checklists locais</span></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div class="section-title">Governança</div>
+        </div>
+        <div class="risk-row">
+          <div class="metric"><span>Secrets hardcoded</span><strong class="accent-red">bloquear</strong></div>
+          <div class="metric"><span>Dados sensíveis</span><strong class="accent-amber">validar</strong></div>
+          <div class="metric"><span>Qualidade de dados</span><strong class="accent-blue">exigir</strong></div>
+        </div>
+      </section>
+    </main>
+  </aside>
+</body>
+</html>

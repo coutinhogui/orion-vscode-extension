@@ -1,0 +1,71 @@
+@page "/orion-template"
+@inject OrionTemplateClient Client
+
+<h3>OrionTemplate</h3>
+
+<input @bind="Filtro" placeholder="Filtrar por status" />
+<button @onclick="CarregarAsync">Atualizar</button>
+
+@if (Loading)
+{
+    <p>Carregando dados...</p>
+}
+else if (!string.IsNullOrWhiteSpace(Erro))
+{
+    <p class="text-danger">@Erro</p>
+}
+else if (Itens.Count == 0)
+{
+    <p>Nenhum registro encontrado.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Data de referencia</th>
+                <th>Valor</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Itens)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.ReferenceDate</td>
+                    <td>@item.Value</td>
+                    <td>@item.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private bool Loading { get; set; }
+    private string? Erro { get; set; }
+    private string Filtro { get; set; } = string.Empty;
+    private List<OrionTemplateViewModel> Itens { get; set; } = [];
+
+    protected override async Task OnInitializedAsync() => await CarregarAsync();
+
+    private async Task CarregarAsync()
+    {
+        Loading = true;
+        Erro = null;
+        try
+        {
+            Itens = await Client.GetAsync(Filtro);
+        }
+        catch (Exception ex)
+        {
+            Erro = $"Erro ao carregar dados: {ex.Message}";
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+}

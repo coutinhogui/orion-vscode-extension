@@ -1,0 +1,225 @@
+{
+  "name": "orion-vscode",
+  "displayName": "ORION",
+  "description": "ORION - Orquestrador de Riscos, Integracoes, Operacoes e Normas para equipes de engenharia de dados em banco.",
+  "version": "0.1.8",
+  "publisher": "engenharia-riscos",
+  "icon": "resources/orion.png",
+  "repository": {
+    "type": "git",
+    "url": "https://example.invalid/engenharia-riscos/orion-vscode"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other",
+    "Snippets",
+    "Data Science"
+  ],
+  "activationEvents": [
+    "onChatParticipant:orion",
+    "onCommand:orion.openHelp",
+    "onCommand:orion.openFirstUseGuide",
+    "onCommand:orion.showLogs",
+    "onCommand:orion.setupWorkspace",
+    "onCommand:orion.reviewCurrentFile",
+    "onCommand:orion.createDatabricksPipeline",
+    "onCommand:orion.generateCopilotInstructions",
+    "onCommand:orion.generateTechnicalDocumentation",
+    "onCommand:orion.createDotnetApi",
+    "onCommand:orion.createBlazorPage",
+    "onCommand:orion.testOllamaConnection",
+    "onCommand:orion.diagnoseAi",
+    "onCommand:orion.configureAi",
+    "onCommand:orion.selectOllamaModel",
+    "onView:orionHelp",
+    "onStartupFinished"
+  ],
+  "main": "./out/src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "orion.openHelp",
+        "title": "ORION: Abrir Ajuda"
+      },
+      {
+        "command": "orion.openFirstUseGuide",
+        "title": "ORION: Guia Rapido de Primeiro Uso"
+      },
+      {
+        "command": "orion.showLogs",
+        "title": "ORION: Abrir Logs"
+      },
+      {
+        "command": "orion.setupWorkspace",
+        "title": "ORION: Configurar Workspace"
+      },
+      {
+        "command": "orion.reviewCurrentFile",
+        "title": "ORION: Revisar Arquivo Atual"
+      },
+      {
+        "command": "orion.createDatabricksPipeline",
+        "title": "ORION: Criar Pipeline Databricks"
+      },
+      {
+        "command": "orion.generateCopilotInstructions",
+        "title": "ORION: Gerar Copilot Instructions"
+      },
+      {
+        "command": "orion.generateTechnicalDocumentation",
+        "title": "ORION: Gerar Documentacao Tecnica"
+      },
+      {
+        "command": "orion.createDotnetApi",
+        "title": "ORION: Gerar API .NET 8 Basica"
+      },
+      {
+        "command": "orion.createBlazorPage",
+        "title": "ORION: Gerar Pagina Blazor Basica"
+      },
+      {
+        "command": "orion.testOllamaConnection",
+        "title": "ORION: Testar Conexao Ollama"
+      },
+      {
+        "command": "orion.diagnoseAi",
+        "title": "ORION: Diagnosticar IA"
+      },
+      {
+        "command": "orion.configureAi",
+        "title": "ORION: Configurar IA e Selecionar Modelo"
+      },
+      {
+        "command": "orion.selectOllamaModel",
+        "title": "ORION: Selecionar Modelo Ollama Instalado"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "orion",
+          "title": "ORION",
+          "icon": "resources/orion-activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "orion": [
+        {
+          "id": "orionHelp",
+          "name": "Ajuda e Boas-vindas",
+          "type": "webview"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "ORION",
+      "properties": {
+        "orion.ai.mode": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "local",
+            "copilot",
+            "ollama"
+          ],
+          "default": "auto",
+          "description": "Modo de resposta da ORION. Para configurar sem digitar valores, use o comando ORION: Configurar IA e Selecionar Modelo.",
+          "markdownDescription": "Modo de resposta da ORION. **Recomendado:** nao configure manualmente aqui. Use `Ctrl+Shift+P` -> `ORION: Configurar IA e Selecionar Modelo`, que lista modos e modelos Ollama instalados."
+        },
+        "orion.ollama.baseUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "URL base do Ollama local. A selecao guiada consulta /api/tags nesta URL.",
+          "markdownDescription": "URL base do Ollama local. A selecao guiada consulta `${orion.ollama.baseUrl}/api/tags`. **Recomendado:** use `ORION: Configurar IA e Selecionar Modelo`."
+        },
+        "orion.ollama.model": {
+          "type": "string",
+          "default": "qwen2.5-coder:3b",
+          "description": "Campo avancado/manual. Para saber quais modelos existem, use ORION: Selecionar Modelo Ollama Instalado.",
+          "markdownDescription": "**Nao precisa saber/digitar o nome.** Use `Ctrl+Shift+P` -> `ORION: Selecionar Modelo Ollama Instalado`. A ORION consulta `/api/tags`, mostra uma lista pesquisavel com versao/tamanho/familia e salva este campo automaticamente."
+        },
+        "orion.ollama.autoFallbackToLocal": {
+          "type": "boolean",
+          "default": true,
+          "description": "Quando true, a ORION volta automaticamente para resposta local se o Ollama falhar."
+        },
+        "orion.templates.overwriteExistingFiles": {
+          "type": "boolean",
+          "default": false,
+          "description": "Permite sobrescrever arquivos existentes ao gerar templates ORION."
+        },
+        "orion.workspace.defaultDataBase": {
+          "type": "string",
+          "default": "dev_riscos",
+          "description": "Valor padrao para o parametro data_base em templates Databricks."
+        }
+      }
+    },
+    "chatParticipants": [
+      {
+        "id": "orion",
+        "name": "orion",
+        "fullName": "ORION",
+        "description": "Orquestrador de Riscos, Integracoes, Operacoes e Normas.",
+        "isSticky": true,
+        "commands": [
+          {
+            "name": "help",
+            "description": "Mostra comandos e exemplos da ORION."
+          },
+          {
+            "name": "setup",
+            "description": "Configura o workspace com padroes da equipe."
+          },
+          {
+            "name": "review",
+            "description": "Revisa o arquivo aberto com checklist local."
+          },
+          {
+            "name": "pipeline",
+            "description": "Cria um pipeline Databricks bronze/silver/gold."
+          },
+          {
+            "name": "api",
+            "description": "Cria uma API .NET 8 Minimal API basica."
+          },
+          {
+            "name": "blazor",
+            "description": "Cria uma pagina Blazor basica."
+          },
+          {
+            "name": "doc",
+            "description": "Gera documentacao tecnica local."
+          },
+          {
+            "name": "standards",
+            "description": "Mostra padroes de engenharia ORION."
+          },
+          {
+            "name": "checklist",
+            "description": "Mostra checklist de producao."
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src test --ext ts",
+    "test": "npm run compile && node ./out/test/runTests.js",
+    "package": "npm run compile && vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "@types/vscode": "^1.90.0",
+    "@typescript-eslint/eslint-plugin": "^7.11.0",
+    "@typescript-eslint/parser": "^7.11.0",
+    "@vscode/vsce": "^2.32.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.5"
+  }
+}
