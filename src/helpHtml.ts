@@ -224,6 +224,12 @@ export function renderOrionHelpHtml(): string {
       font-size: 11px;
     }
 
+    .summary-text {
+      padding: 6px 12px 8px 30px;
+      color: var(--orion-muted);
+      font-size: 12px;
+    }
+
     .accent-blue { color: var(--orion-blue); }
     .accent-amber { color: var(--orion-amber); }
     .accent-red { color: var(--orion-red); }
@@ -301,20 +307,12 @@ export function renderOrionHelpHtml(): string {
       <summary>
         <span class="chevron"></span>
         <span>IA ativa</span>
-        <span class="count">4</span>
+        <span class="count" id="orion-ai-provider">...</span>
       </summary>
-      <div class="metric"><span>Modo</span><code id="orion-ai-mode">carregando...</code></div>
-      <div class="metric"><span>Modelo</span><code id="orion-ai-model">carregando...</code></div>
-      <div class="metric"><span>Servidor</span><code id="orion-ai-base-url">carregando...</code></div>
+      <div class="summary-text" id="orion-ai-summary">carregando configuracao atual...</div>
+      <div id="orion-ai-details"></div>
       <div class="metric"><span>Status</span><strong id="orion-ai-status" class="accent-amber">verificando</strong></div>
-      <button class="action" data-command="orion.selectOllamaModel">
-        <span class="icon">M</span>
-        <span class="label"><strong>Modelos Ollama</strong><span>Selecionar modelo instalado</span></span>
-      </button>
-      <button class="action" data-command="orion.testOllamaConnection">
-        <span class="icon">T</span>
-        <span class="label"><strong>Testar Ollama</strong><span>Validar servidor local configurado</span></span>
-      </button>
+      <div id="orion-ai-actions"></div>
     </details>
 
     <details>
@@ -390,21 +388,64 @@ export function renderOrionHelpHtml(): string {
       }
     }
 
+    function clearChildren(id) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.replaceChildren();
+      }
+      return element;
+    }
+
+    function appendDetail(container, detail) {
+      const row = document.createElement('div');
+      row.className = 'metric';
+      const label = document.createElement('span');
+      label.textContent = detail.label || '-';
+      const value = document.createElement('code');
+      value.textContent = detail.value || '-';
+      row.append(label, value);
+      container.append(row);
+    }
+
+    function appendAction(container, action) {
+      const button = document.createElement('button');
+      button.className = 'action';
+      button.dataset.command = action.command;
+      const icon = document.createElement('span');
+      icon.className = 'icon';
+      icon.textContent = action.icon || '>';
+      const label = document.createElement('span');
+      label.className = 'label';
+      const strong = document.createElement('strong');
+      strong.textContent = action.label || '-';
+      const description = document.createElement('span');
+      description.textContent = action.description || '';
+      label.append(strong, description);
+      button.append(icon, label);
+      button.addEventListener('click', () => vscode.postMessage({ command: action.command }));
+      container.append(button);
+    }
+
     window.addEventListener('message', (event) => {
       const message = event.data;
       if (message.type !== 'aiStatus') {
         return;
       }
 
-      setText('orion-ai-mode', message.mode);
-      setText('orion-ai-model', message.model);
-      setText('orion-ai-base-url', message.baseUrl);
-      setText('orion-extension-version', message.version);
-      setText('orion-version-pill', message.version);
-      setText('orion-extension-path', message.extensionPath);
-      setText('orion-workspace-config-path', message.workspaceConfigPath);
-      setText('orion-storage-path', message.globalStoragePath);
-      setText('orion-ai-pill', message.mode ? 'IA ' + message.mode : 'IA');
+      setText('orion-ai-provider', message.providerLabel);
+      setText('orion-ai-summary', message.summary);
+      setText('orion-extension-version', message.runtime && message.runtime.version);
+      setText('orion-version-pill', message.runtime && message.runtime.version);
+      setText('orion-extension-path', message.runtime && message.runtime.extensionPath);
+      setText('orion-workspace-config-path', message.runtime && message.runtime.workspaceConfigPath);
+      setText('orion-storage-path', message.runtime && message.runtime.globalStoragePath);
+      setText('orion-ai-pill', message.providerLabel ? 'IA ' + message.providerLabel : 'IA');
+
+      const details = clearChildren('orion-ai-details');
+      (message.details || []).forEach((detail) => appendDetail(details, detail));
+
+      const actions = clearChildren('orion-ai-actions');
+      (message.actions || []).forEach((action) => appendAction(actions, action));
 
       const status = document.getElementById('orion-ai-status');
       status.textContent = message.status || 'desconhecido';

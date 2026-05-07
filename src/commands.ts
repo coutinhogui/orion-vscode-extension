@@ -40,6 +40,22 @@ export async function diagnoseAiCommand(): Promise<string> {
   const mode = vscode.workspace.getConfiguration('orion.ai').get<string>('mode', 'auto');
   const baseUrl = vscode.workspace.getConfiguration('orion.ollama').get<string>('baseUrl', 'http://localhost:11434');
   const configuredModel = vscode.workspace.getConfiguration('orion.ollama').get<string>('model', 'qwen2.5-coder:3b');
+  if (mode !== 'ollama') {
+    const report = buildAiDiagnosticsReport({
+      mode,
+      baseUrl,
+      configuredModel,
+      resolvedModel: configuredModel,
+      tagsOk: false,
+      models: [],
+      completionOk: false,
+      completionMessage: `Teste Ollama nao executado para modo ${mode}.`
+    });
+    const doc = await vscode.workspace.openTextDocument({ content: report, language: 'markdown' });
+    await vscode.window.showTextDocument(doc, { preview: false });
+    return report;
+  }
+
   const tags = await probeOllamaConnection(baseUrl);
   const resolvedModel = chooseOllamaModel(configuredModel, tags.models);
   logOrion('info', 'ollama tags probe finished', { ok: tags.ok, modelCount: tags.models.length, baseUrl });

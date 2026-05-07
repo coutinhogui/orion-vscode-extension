@@ -11,6 +11,7 @@ import { detectResourceIntent } from '../src/resourceIntent';
 import { buildAiDiagnosticsReport } from '../src/diagnostics';
 import { formatLogEntry, summarizeText } from '../src/logging';
 import { buildFirstUseGuide } from '../src/firstUseGuide';
+import { buildAiPanelStatus } from '../src/aiStatus';
 
 function testNormalizeName(): void {
   assert.equal(normalizeName('Risco Credito Banco'), 'risco-credito-banco');
@@ -52,20 +53,20 @@ function testHelpViewHasModernSections(): void {
   assert.ok(html.includes('<details open>'));
   assert.ok(html.includes('Configurar IA'));
   assert.ok(html.includes('Primeiro uso'));
-  assert.ok(html.includes('Modelos Ollama'));
   assert.ok(html.includes('Diagnosticar IA'));
   assert.ok(html.includes('Abrir logs'));
   assert.ok(html.includes('orion.diagnoseAi'));
   assert.ok(html.includes('orion.openFirstUseGuide'));
   assert.ok(html.includes('orion.showLogs'));
   assert.ok(html.includes('IA ativa'));
-  assert.ok(html.includes('orion-ai-mode'));
+  assert.ok(html.includes('orion-ai-provider'));
+  assert.ok(html.includes('orion-ai-details'));
+  assert.ok(html.includes('orion-ai-actions'));
   assert.ok(html.includes('orion-extension-version'));
   assert.ok(html.includes('orion-extension-path'));
   assert.ok(html.includes('orion-workspace-config-path'));
   assert.ok(html.includes('getAiStatus'));
   assert.ok(html.includes('orion.configureAi'));
-  assert.ok(html.includes('orion.selectOllamaModel'));
   assert.ok(html.includes('#CC092F'));
   assert.ok(html.includes('Riscos, integrações, operações e normas'));
 }
@@ -189,6 +190,75 @@ function testAiDiagnosticsReport(): void {
   assert.ok(report.includes('/api/tags'));
   assert.ok(report.includes('/v1/chat/completions'));
   assert.ok(report.includes('qwen2.5-coder:3b'));
+
+  const copilotReport = buildAiDiagnosticsReport({
+    mode: 'copilot',
+    baseUrl: 'http://localhost:11434',
+    configuredModel: 'qwen2.5-coder:3b',
+    resolvedModel: 'qwen2.5-coder:3b',
+    tagsOk: false,
+    models: [],
+    completionOk: false,
+    completionMessage: 'Nao executado para modo Copilot.'
+  });
+  assert.ok(copilotReport.includes('Modo configurado: copilot'));
+  assert.ok(copilotReport.includes('VS Code Language Model API'));
+  assert.equal(copilotReport.includes('Servidor Ollama'), false);
+  assert.equal(copilotReport.includes('/api/tags'), false);
+}
+
+function testAiPanelStatusIsModeSpecific(): void {
+  const runtime = {
+    version: '0.1.11',
+    extensionPath: 'C:\\Users\\couti\\.vscode\\extensions\\engenharia-riscos.orion-vscode-0.1.11',
+    globalStoragePath: 'C:\\Users\\couti\\AppData\\Roaming\\Code\\User\\globalStorage\\engenharia-riscos.orion-vscode',
+    workspaceConfigPath: 'C:\\Users\\couti\\source\\orion-vscode-extension\\.vscode\\settings.json'
+  };
+
+  const copilot = buildAiPanelStatus({
+    mode: 'copilot',
+    baseUrl: 'http://localhost:11434',
+    configuredModel: 'qwen2.5-coder:3b',
+    runtime
+  });
+  assert.equal(copilot.providerLabel, 'Copilot');
+  assert.equal(copilot.details.some((detail) => detail.label.includes('Ollama')), false);
+  assert.equal(copilot.actions.some((action) => action.label.includes('Ollama')), false);
+
+  const local = buildAiPanelStatus({
+    mode: 'local',
+    baseUrl: 'http://localhost:11434',
+    configuredModel: 'qwen2.5-coder:3b',
+    runtime
+  });
+  assert.equal(local.providerLabel, 'Local');
+  assert.equal(local.details.some((detail) => detail.value.includes('qwen2.5-coder')), false);
+
+  const auto = buildAiPanelStatus({
+    mode: 'auto',
+    baseUrl: 'http://localhost:11434',
+    configuredModel: 'qwen2.5-coder:3b',
+    runtime
+  });
+  assert.equal(auto.providerLabel, 'Auto');
+  assert.equal(auto.details.some((detail) => detail.label.includes('Servidor')), false);
+  assert.equal(auto.actions.some((action) => action.label.includes('Ollama')), false);
+
+  const ollama = buildAiPanelStatus({
+    mode: 'ollama',
+    baseUrl: 'http://localhost:11434',
+    configuredModel: 'qwen2.5-coder:3b',
+    runtime,
+    ollama: {
+      ok: true,
+      resolvedModel: 'qwen2.5-coder:3b',
+      modelPresent: true,
+      modelCount: 2
+    }
+  });
+  assert.equal(ollama.providerLabel, 'Ollama');
+  assert.equal(ollama.details.some((detail) => detail.label === 'Servidor'), true);
+  assert.equal(ollama.actions.some((action) => action.command === 'orion.selectOllamaModel'), true);
 }
 
 function testLogFormattingDoesNotExposePrompt(): void {
@@ -226,6 +296,7 @@ function run(): void {
   testBuildOllamaModelQuickPickItems();
   testConversationGreeting();
   testAiDiagnosticsReport();
+  testAiPanelStatusIsModeSpecific();
   testLogFormattingDoesNotExposePrompt();
   testFirstUseGuideDocumentsMvpAcceptanceFlow();
   console.log('ORION unit tests passed');

@@ -2,19 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { renderOrionHelpHtml } from './helpHtml';
 import { chooseOllamaModel, probeOllamaConnection } from './ollama';
-
-interface OrionAiStatus {
-  readonly type: 'aiStatus';
-  readonly mode: string;
-  readonly model: string;
-  readonly baseUrl: string;
-  readonly status: string;
-  readonly ok: boolean;
-  readonly version: string;
-  readonly extensionPath: string;
-  readonly globalStoragePath: string;
-  readonly workspaceConfigPath: string;
-}
+import { AiPanelStatus, AiRuntimeInfo, buildAiPanelStatus } from './aiStatus';
 
 export class OrionHelpViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'orionHelp';
@@ -38,50 +26,39 @@ export class OrionHelpViewProvider implements vscode.WebviewViewProvider {
   }
 }
 
-export async function getAiStatus(context: vscode.ExtensionContext): Promise<OrionAiStatus> {
+export async function getAiStatus(context: vscode.ExtensionContext): Promise<AiPanelStatus> {
   const mode = vscode.workspace.getConfiguration('orion.ai').get<string>('mode', 'auto');
   const baseUrl = vscode.workspace.getConfiguration('orion.ollama').get<string>('baseUrl', 'http://localhost:11434');
   const configuredModel = vscode.workspace.getConfiguration('orion.ollama').get<string>('model', 'qwen2.5-coder:3b');
   const runtime = getRuntimeInfo(context);
 
-  if (mode !== 'ollama' && mode !== 'auto') {
-    return {
-      type: 'aiStatus',
+  if (mode !== 'ollama') {
+    return buildAiPanelStatus({
       mode,
-      model: configuredModel,
       baseUrl,
-      status: mode === 'local' ? 'modo local ativo' : 'sem teste Ollama',
-      ok: mode === 'local',
-      ...runtime
-    };
+      configuredModel,
+      runtime
+    });
   }
 
   const probe = await probeOllamaConnection(baseUrl);
-  if (!probe.ok) {
-    return {
-      type: 'aiStatus',
-      mode,
-      model: configuredModel,
-      baseUrl,
-      status: 'Ollama desconectado',
-      ok: false,
-      ...runtime
-    };
-  }
-
   const resolvedModel = chooseOllamaModel(configuredModel, probe.models);
-  return {
-    type: 'aiStatus',
+
+  return buildAiPanelStatus({
     mode,
-    model: resolvedModel === configuredModel ? configuredModel : `${resolvedModel} (auto)`,
     baseUrl,
-    status: probe.models.includes(configuredModel) ? 'conectado' : 'modelo configurado ausente',
-    ok: true,
-    ...runtime
-  };
+    configuredModel,
+    runtime,
+    ollama: {
+      ok: probe.ok,
+      resolvedModel,
+      modelPresent: probe.models.includes(configuredModel),
+      modelCount: probe.models.length
+    }
+  });
 }
 
-function getRuntimeInfo(context: vscode.ExtensionContext): Pick<OrionAiStatus, 'version' | 'extensionPath' | 'globalStoragePath' | 'workspaceConfigPath'> {
+function getRuntimeInfo(context: vscode.ExtensionContext): AiRuntimeInfo {
   const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
   return {
     version: String(context.extension.packageJSON.version ?? 'desconhecida'),

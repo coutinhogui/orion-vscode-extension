@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.11
+
+- Corrigida a seção `IA ativa` para refletir o modo selecionado, sem mostrar ações/configurações Ollama em `local`, `copilot` ou `auto`.
+- O painel agora recebe detalhes e ações de IA dinâmicos por modo.
+- O diagnóstico de IA não executa testes Ollama quando o modo ativo não é `ollama`.
+
 ## 0.1.10
 
 - Reorganizado o painel ORION em seções recolhíveis no estilo explorer.

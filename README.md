@@ -4,15 +4,21 @@ ORION - Orquestrador de Riscos, Integracoes, Operacoes e Normas.
 
 Extensao interna para VS Code voltada a equipes de engenharia de dados em banco com foco em riscos financeiros. A extensao funciona localmente por padrao, sem backend externo, sem secrets e sem acesso real a Databricks, producao ou APIs internas.
 
+Versao atual: `0.1.11`.
+
 ## Recursos
 
 - Participante de chat `@orion` no Chat do VS Code/Copilot.
-- Menu lateral ORION com ajuda e boas-vindas.
+- Painel lateral ORION com secoes recolhiveis no estilo Explorer.
+- Secao `IA ativa` sensivel ao modo selecionado: `auto`, `local`, `copilot` ou `ollama`.
+- Secao `Instalacao` com versao, caminho da extensao instalada, storage e arquivo de configuracao do workspace.
 - Comandos no Command Palette.
 - Setup automatico de workspace.
 - Geracao de `.github/copilot-instructions.md`.
 - Revisao local do arquivo atual.
 - Templates Databricks, .NET 8 Minimal API, Blazor, documentacao tecnica e padroes de engenharia.
+- Modo padrao `orion.ai.mode = auto`.
+- Modo `orion.ai.mode = local` para respostas e recursos locais sem provider de modelo.
 - Modo opcional `orion.ai.mode = copilot` para tentar usar Language Model API quando disponivel.
 - Modo opcional `orion.ai.mode = ollama` para usar um servidor local Ollama compatível com OpenAI.
 
@@ -35,7 +41,7 @@ Tambem e possivel usar linguagem natural para recursos claros:
 - `@orion revisar o arquivo aberto`
 - `@orion configurar workspace`
 
-Quando nao houver um recurso aplicavel, a ORION responde como conversa livre via Ollama/Copilot quando configurado. Em fallback local, ela usa respostas especificas por area, como Databricks, .NET, Blazor e SQL.
+Quando nao houver um recurso aplicavel, a ORION responde conforme o modo de IA selecionado. Em fallback local, ela usa respostas especificas por area, como Databricks, .NET, Blazor e SQL.
 
 ## Command Palette
 
@@ -98,27 +104,65 @@ Alternativa Windows:
 
 O arquivo `.vsix` gerado pode ser instalado no VS Code por `Extensions: Install from VSIX...`.
 
+Alternativa via CLI do VS Code no Windows:
+
+```powershell
+& "$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin\code.cmd" --install-extension .\orion-vscode-0.1.11.vsix --force
+```
+
+Para confirmar a versao instalada:
+
+```powershell
+& "$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin\code.cmd" --list-extensions --show-versions | Select-String -Pattern 'orion|engenharia-riscos'
+```
+
 ## Primeiro uso apos instalar a VSIX
 
 1. Recarregue a janela do VS Code/Cursor.
 2. Execute `ORION: Guia Rapido de Primeiro Uso`.
 3. Execute `ORION: Configurar IA e Selecionar Modelo`.
-4. Escolha `Ollama local`.
-5. Selecione `qwen2.5-coder:3b` na lista de modelos instalados.
+4. Escolha o modo desejado: `Auto`, `Local`, `Copilot` ou `Ollama local`.
+5. Abra o painel lateral ORION e confira a secao `IA ativa`.
 6. Execute `ORION: Diagnosticar IA`.
 7. Teste no chat: `@orion o que e natureza`.
 8. Teste um recurso especifico: `@orion crie uma API para risco credito`.
 9. Se algo parecer errado, execute `ORION: Abrir Logs`.
 
+Se escolher `Ollama local`, a ORION tambem pede a URL base, consulta `/api/tags`, lista os modelos instalados e salva o modelo selecionado.
+
 ## Configuracoes
 
-- `orion.ai.mode`: `auto`, `local`, `copilot` ou `ollama`. Padrao: `auto`. Em conversa livre, `auto` tenta Ollama; `local` nunca chama IA externa/local de modelo.
+- `orion.ai.mode`: `auto`, `local`, `copilot` ou `ollama`. Padrao: `auto`.
 - `orion.ollama.baseUrl`: URL do Ollama local. Padrao: `http://localhost:11434`.
 - `orion.ollama.model`: modelo local, como `qwen2.5-coder:3b`. Padrao: `qwen2.5-coder:3b`.
 - Se o modelo configurado nao estiver instalado, a ORION tenta usar automaticamente um modelo local disponivel, priorizando `qwen2.5-coder:3b`, `qwen2.5-coder:7b`, `qwen3.5`, `llama3.1:8b`, `granite-code:3b` e `gemma4:e2b`.
 - `orion.ollama.autoFallbackToLocal`: volta para resposta local quando o Ollama falhar. Quando `false`, a ORION informa que o Ollama nao respondeu em vez de mascarar a falha. Padrao: `true`.
 - `orion.templates.overwriteExistingFiles`: permite sobrescrever templates existentes. Padrao: `false`.
 - `orion.workspace.defaultDataBase`: base logica usada nos templates Databricks. Padrao: `dev_riscos`.
+
+### Modos de IA
+
+| Modo | Comportamento | Secao `IA ativa` |
+| --- | --- | --- |
+| `auto` | Prioriza recursos ORION quando detecta intencao clara e usa a politica interna para conversa livre. | Mostra politica automatica, sem expor configuracao Ollama como se fosse o modo ativo. |
+| `local` | Usa respostas locais e comandos ORION sem provider de modelo. | Mostra provider local e nao exibe modelo/servidor Ollama. |
+| `copilot` | Usa a Language Model API do VS Code quando o Chat fornece `request.model`. | Mostra Copilot como provider e nao exibe acoes Ollama. |
+| `ollama` | Usa servidor Ollama local configurado. | Mostra servidor, modelo resolvido, status e acoes `Modelos Ollama` / `Testar Ollama`. |
+
+O comando `ORION: Diagnosticar IA` tambem respeita o modo. Ele so testa `/api/tags` e `/v1/chat/completions` quando `orion.ai.mode = ollama`.
+
+## Painel lateral ORION
+
+O painel lateral organiza as acoes em secoes recolhiveis:
+
+- `Sessoes`: chat operacional, setup de workspace e revisao local.
+- `Acoes rapidas`: primeiro uso, configurar IA, diagnosticar IA, abrir logs e gerar docs.
+- `IA ativa`: detalhes e acoes dinamicas conforme o modo selecionado.
+- `Templates`: Databricks pipeline, .NET 8 API e Blazor page.
+- `Governanca`: lembretes de secrets, dados sensiveis e qualidade de dados.
+- `Instalacao`: versao, pasta instalada, storage e caminho do `.vscode/settings.json`.
+
+Os caminhos exibidos em `Instalacao` ajudam a verificar onde a extensao esta instalada e qual arquivo de configuracao do workspace esta sendo considerado.
 
 ## Garantias da primeira versao
 
@@ -160,3 +204,9 @@ A ORION consulta `${orion.ollama.baseUrl}/api/tags`, mostra os modelos instalado
 - `orion.ollama.baseUrl = <URL configurada>`
 
 Depois de salvar, a ORION faz um teste rapido com o modelo selecionado e informa se ele respondeu.
+
+## Notas da versao 0.1.11
+
+- A secao `IA ativa` agora caminha junto com o modo selecionado.
+- `Auto`, `Local` e `Copilot` nao mostram mais configuracoes ou acoes de Ollama.
+- `ORION: Diagnosticar IA` evita testes Ollama quando o modo ativo nao e `ollama`.

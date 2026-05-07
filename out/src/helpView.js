@@ -39,6 +39,7 @@ const vscode = __importStar(require("vscode"));
 const path = __importStar(require("path"));
 const helpHtml_1 = require("./helpHtml");
 const ollama_1 = require("./ollama");
+const aiStatus_1 = require("./aiStatus");
 class OrionHelpViewProvider {
     context;
     static viewType = 'orionHelp';
@@ -66,39 +67,28 @@ async function getAiStatus(context) {
     const baseUrl = vscode.workspace.getConfiguration('orion.ollama').get('baseUrl', 'http://localhost:11434');
     const configuredModel = vscode.workspace.getConfiguration('orion.ollama').get('model', 'qwen2.5-coder:3b');
     const runtime = getRuntimeInfo(context);
-    if (mode !== 'ollama' && mode !== 'auto') {
-        return {
-            type: 'aiStatus',
+    if (mode !== 'ollama') {
+        return (0, aiStatus_1.buildAiPanelStatus)({
             mode,
-            model: configuredModel,
             baseUrl,
-            status: mode === 'local' ? 'modo local ativo' : 'sem teste Ollama',
-            ok: mode === 'local',
-            ...runtime
-        };
+            configuredModel,
+            runtime
+        });
     }
     const probe = await (0, ollama_1.probeOllamaConnection)(baseUrl);
-    if (!probe.ok) {
-        return {
-            type: 'aiStatus',
-            mode,
-            model: configuredModel,
-            baseUrl,
-            status: 'Ollama desconectado',
-            ok: false,
-            ...runtime
-        };
-    }
     const resolvedModel = (0, ollama_1.chooseOllamaModel)(configuredModel, probe.models);
-    return {
-        type: 'aiStatus',
+    return (0, aiStatus_1.buildAiPanelStatus)({
         mode,
-        model: resolvedModel === configuredModel ? configuredModel : `${resolvedModel} (auto)`,
         baseUrl,
-        status: probe.models.includes(configuredModel) ? 'conectado' : 'modelo configurado ausente',
-        ok: true,
-        ...runtime
-    };
+        configuredModel,
+        runtime,
+        ollama: {
+            ok: probe.ok,
+            resolvedModel,
+            modelPresent: probe.models.includes(configuredModel),
+            modelCount: probe.models.length
+        }
+    });
 }
 function getRuntimeInfo(context) {
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;

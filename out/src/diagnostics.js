@@ -5,6 +5,47 @@ function status(value) {
     return value ? 'OK' : 'FALHOU';
 }
 function buildAiDiagnosticsReport(input) {
+    if (input.mode === 'local') {
+        return [
+            '# Diagnostico ORION IA',
+            '',
+            '## Configuracao',
+            '- Modo configurado: local',
+            '- Provider ativo: nenhum provider externo',
+            '- Comportamento: respostas locais, templates e revisoes sem chamada de modelo.',
+            '',
+            '## Proximas acoes',
+            '- Use `ORION: Configurar IA e Selecionar Modelo` para mudar para Auto, Copilot ou Ollama.'
+        ].join('\n');
+    }
+    if (input.mode === 'copilot') {
+        return [
+            '# Diagnostico ORION IA',
+            '',
+            '## Configuracao',
+            '- Modo configurado: copilot',
+            '- Provider ativo: VS Code Language Model API',
+            '- Comportamento: a ORION usa o modelo fornecido pelo Chat quando disponivel.',
+            '- Fallback: resposta local se o Chat nao fornecer `request.model`.',
+            '',
+            '## Proximas acoes',
+            '- Abra o Chat do VS Code/Cursor e use `@orion` para validar o modelo Copilot em contexto real.',
+            '- Use `ORION: Abrir Logs` se a resposta cair para fallback local.'
+        ].join('\n');
+    }
+    if (input.mode !== 'ollama') {
+        return [
+            '# Diagnostico ORION IA',
+            '',
+            '## Configuracao',
+            `- Modo configurado: ${input.mode}`,
+            '- Provider ativo: automatico',
+            '- Comportamento: a ORION prioriza recursos locais quando detecta intencao clara e usa a politica interna para conversa livre.',
+            '',
+            '## Proximas acoes',
+            '- Use `ORION: Configurar IA e Selecionar Modelo` para fixar Local, Copilot ou Ollama.'
+        ].join('\n');
+    }
     const modelList = input.models.length > 0
         ? input.models.map((model) => `- ${model}`).join('\n')
         : '- Nenhum modelo retornado.';

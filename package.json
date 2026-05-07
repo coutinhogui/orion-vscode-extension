@@ -2,7 +2,7 @@
   "name": "orion-vscode",
   "displayName": "ORION",
   "description": "ORION - Orquestrador de Riscos, Integracoes, Operacoes e Normas para equipes de engenharia de dados em banco.",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "publisher": "engenharia-riscos",
   "icon": "resources/orion.png",
   "repository": {
