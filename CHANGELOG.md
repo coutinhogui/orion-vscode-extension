@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.12
+
+- Corrigido erro ao salvar `orion.ai.mode` em Folder Settings.
+- As configuracoes ORION agora declaram `scope: resource`, permitindo gravação em workspace/folder settings quando houver override por pasta.
+
 ## 0.1.11
 
 - Corrigida a seção `IA ativa` para refletir o modo selecionado, sem mostrar ações/configurações Ollama em `local`, `copilot` ou `auto`.

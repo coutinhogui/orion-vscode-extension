@@ -71,6 +71,25 @@ function testHelpViewHasModernSections(): void {
   assert.ok(html.includes('Riscos, integrações, operações e normas'));
 }
 
+function testConfigurationContributionsSupportFolderScope(): void {
+  const manifest = JSON.parse(readFileSync('package.json', 'utf8')) as {
+    contributes?: { configuration?: { properties?: Record<string, { scope?: string }> } };
+  };
+  const properties = manifest.contributes?.configuration?.properties ?? {};
+  const settings = [
+    'orion.ai.mode',
+    'orion.ollama.baseUrl',
+    'orion.ollama.model',
+    'orion.ollama.autoFallbackToLocal',
+    'orion.templates.overwriteExistingFiles',
+    'orion.workspace.defaultDataBase'
+  ];
+
+  for (const setting of settings) {
+    assert.equal(properties[setting]?.scope, 'resource', `${setting} must support folder settings`);
+  }
+}
+
 function testIconUsesBradescoInspiredPalette(): void {
   const icon = readFileSync('resources/orion.svg', 'utf8');
   assert.ok(icon.includes('#CC092F'));
@@ -286,6 +305,7 @@ function run(): void {
   testDatabricksPipelineTemplate();
   testDotnetApiTemplate();
   testHelpViewHasModernSections();
+  testConfigurationContributionsSupportFolderScope();
   testIconUsesBradescoInspiredPalette();
   testOllamaHelpers();
   testResourceIntentDetection();

@@ -4,7 +4,7 @@ ORION - Orquestrador de Riscos, Integracoes, Operacoes e Normas.
 
 Extensao interna para VS Code voltada a equipes de engenharia de dados em banco com foco em riscos financeiros. A extensao funciona localmente por padrao, sem backend externo, sem secrets e sem acesso real a Databricks, producao ou APIs internas.
 
-Versao atual: `0.1.11`.
+Versao atual: `0.1.12`.
 
 ## Recursos
 
@@ -107,7 +107,7 @@ O arquivo `.vsix` gerado pode ser instalado no VS Code por `Extensions: Install 
 Alternativa via CLI do VS Code no Windows:
 
 ```powershell
-& "$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin\code.cmd" --install-extension .\orion-vscode-0.1.11.vsix --force
+& "$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin\code.cmd" --install-extension .\orion-vscode-0.1.12.vsix --force
 ```
 
 Para confirmar a versao instalada:
@@ -139,6 +139,8 @@ Se escolher `Ollama local`, a ORION tambem pede a URL base, consulta `/api/tags`
 - `orion.ollama.autoFallbackToLocal`: volta para resposta local quando o Ollama falhar. Quando `false`, a ORION informa que o Ollama nao respondeu em vez de mascarar a falha. Padrao: `true`.
 - `orion.templates.overwriteExistingFiles`: permite sobrescrever templates existentes. Padrao: `false`.
 - `orion.workspace.defaultDataBase`: base logica usada nos templates Databricks. Padrao: `dev_riscos`.
+
+As configuracoes ORION suportam workspace/folder settings. Isso permite que `ORION: Configurar IA e Selecionar Modelo` atualize o mesmo escopo que esta ativo no workspace aberto.
 
 ### Modos de IA
 
@@ -210,3 +212,8 @@ Depois de salvar, a ORION faz um teste rapido com o modelo selecionado e informa
 - A secao `IA ativa` agora caminha junto com o modo selecionado.
 - `Auto`, `Local` e `Copilot` nao mostram mais configuracoes ou acoes de Ollama.
 - `ORION: Diagnosticar IA` evita testes Ollama quando o modo ativo nao e `ollama`.
+
+## Notas da versao 0.1.12
+
+- Corrige o erro `Unable to write to Folder Settings because orion.ai.mode does not support the folder resource scope`.
+- As configuracoes da ORION agora podem ser gravadas em folder settings quando o workspace usa esse escopo.
