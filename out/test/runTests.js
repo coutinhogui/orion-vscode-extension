@@ -70,20 +70,15 @@ function testHelpViewHasModernSections() {
     strict_1.default.ok(html.includes('#CC092F'));
     strict_1.default.ok(html.includes('Riscos, integrações, operações e normas'));
 }
-function testConfigurationContributionsSupportFolderScope() {
-    const manifest = JSON.parse((0, node_fs_1.readFileSync)('package.json', 'utf8'));
-    const properties = manifest.contributes?.configuration?.properties ?? {};
-    const settings = [
-        'orion.ai.mode',
-        'orion.ollama.baseUrl',
-        'orion.ollama.model',
-        'orion.ollama.autoFallbackToLocal',
-        'orion.templates.overwriteExistingFiles',
-        'orion.workspace.defaultDataBase'
-    ];
-    for (const setting of settings) {
-        strict_1.default.equal(properties[setting]?.scope, 'resource', `${setting} must support folder settings`);
-    }
+function testWorkspaceSetupDoesNotPersistAiProviderSettings() {
+    const settingsFile = (0, templates_1.buildWorkspaceSetupFiles)('dev_riscos').find((file) => file.relativePath === '.vscode/settings.json');
+    strict_1.default.ok(settingsFile);
+    const settings = JSON.parse(settingsFile.content);
+    strict_1.default.equal(settings['orion.ai.mode'], undefined);
+    strict_1.default.equal(settings['orion.ollama.baseUrl'], undefined);
+    strict_1.default.equal(settings['orion.ollama.model'], undefined);
+    strict_1.default.equal(settings['orion.ollama.autoFallbackToLocal'], undefined);
+    strict_1.default.equal(settings['orion.workspace.defaultDataBase'], 'dev_riscos');
 }
 function testIconUsesBradescoInspiredPalette() {
     const icon = (0, node_fs_1.readFileSync)('resources/orion.svg', 'utf8');
@@ -133,13 +128,6 @@ function testAiModeResolutionKeepsExplicitLocalMode() {
     strict_1.default.equal((0, aiMode_1.shouldFallbackToLocalAnswer)(true, true), false);
     strict_1.default.equal((0, aiMode_1.shouldFallbackToLocalAnswer)(true, false), false);
     strict_1.default.equal((0, aiMode_1.shouldFallbackToLocalAnswer)(false, true), true);
-}
-function testConfigurationUpdateScopeFollowsActiveOverride() {
-    strict_1.default.equal((0, aiMode_1.resolveConfigurationUpdateScope)(undefined), 'global');
-    strict_1.default.equal((0, aiMode_1.resolveConfigurationUpdateScope)({}), 'global');
-    strict_1.default.equal((0, aiMode_1.resolveConfigurationUpdateScope)({ workspaceValue: 'auto' }), 'workspace');
-    strict_1.default.equal((0, aiMode_1.resolveConfigurationUpdateScope)({ workspaceFolderValue: 'auto' }), 'workspaceFolder');
-    strict_1.default.equal((0, aiMode_1.resolveConfigurationUpdateScope)({ workspaceValue: 'auto', workspaceFolderValue: 'ollama' }), 'workspaceFolder');
 }
 function testOllamaFallbackMessage() {
     const message = (0, ollama_1.buildOllamaFallbackMessage)('qwen2.5:3b', 'http://localhost:11434');
@@ -281,12 +269,11 @@ function run() {
     testDatabricksPipelineTemplate();
     testDotnetApiTemplate();
     testHelpViewHasModernSections();
-    testConfigurationContributionsSupportFolderScope();
+    testWorkspaceSetupDoesNotPersistAiProviderSettings();
     testIconUsesBradescoInspiredPalette();
     testOllamaHelpers();
     testResourceIntentDetection();
     testAiModeResolutionKeepsExplicitLocalMode();
-    testConfigurationUpdateScopeFollowsActiveOverride();
     testOllamaFallbackMessage();
     testChooseOllamaModel();
     testBuildOllamaModelQuickPickItems();

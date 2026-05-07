@@ -2,7 +2,7 @@
   "name": "orion-vscode",
   "displayName": "ORION",
   "description": "ORION - Orquestrador de Riscos, Integracoes, Operacoes e Normas para equipes de engenharia de dados em banco.",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "publisher": "engenharia-riscos",
   "icon": "resources/orion.png",
   "repository": {
@@ -119,7 +119,6 @@
       "properties": {
         "orion.ai.mode": {
           "type": "string",
-          "scope": "resource",
           "enum": [
             "auto",
             "local",
@@ -132,33 +131,28 @@
         },
         "orion.ollama.baseUrl": {
           "type": "string",
-          "scope": "resource",
           "default": "http://localhost:11434",
           "description": "URL base do Ollama local. A selecao guiada consulta /api/tags nesta URL.",
           "markdownDescription": "URL base do Ollama local. A selecao guiada consulta `${orion.ollama.baseUrl}/api/tags`. **Recomendado:** use `ORION: Configurar IA e Selecionar Modelo`."
         },
         "orion.ollama.model": {
           "type": "string",
-          "scope": "resource",
           "default": "qwen2.5-coder:3b",
           "description": "Campo avancado/manual. Para saber quais modelos existem, use ORION: Selecionar Modelo Ollama Instalado.",
           "markdownDescription": "**Nao precisa saber/digitar o nome.** Use `Ctrl+Shift+P` -> `ORION: Selecionar Modelo Ollama Instalado`. A ORION consulta `/api/tags`, mostra uma lista pesquisavel com versao/tamanho/familia e salva este campo automaticamente."
         },
         "orion.ollama.autoFallbackToLocal": {
           "type": "boolean",
-          "scope": "resource",
           "default": true,
           "description": "Quando true, a ORION volta automaticamente para resposta local se o Ollama falhar."
         },
         "orion.templates.overwriteExistingFiles": {
           "type": "boolean",
-          "scope": "resource",
           "default": false,
           "description": "Permite sobrescrever arquivos existentes ao gerar templates ORION."
         },
         "orion.workspace.defaultDataBase": {
           "type": "string",
-          "scope": "resource",
           "default": "dev_riscos",
           "description": "Valor padrao para o parametro data_base em templates Databricks."
         }

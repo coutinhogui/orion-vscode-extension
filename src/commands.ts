@@ -6,7 +6,6 @@ import { buildOllamaModelQuickPickItems, chooseOllamaModel, generateOllamaRespon
 import { buildAiDiagnosticsReport } from './diagnostics';
 import { logOrion, showOrionLogs } from './output';
 import { buildFirstUseGuide } from './firstUseGuide';
-import { OrionConfigurationUpdateScope, resolveConfigurationUpdateScope } from './aiMode';
 
 export function registerCommands(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
@@ -258,24 +257,16 @@ function summarizeFiles(prefix: string, files: readonly string[]): string {
 }
 
 async function updateOrionConfiguration(section: string, key: string, value: string): Promise<void> {
-  const resource = getConfigurationResource();
-  const config = vscode.workspace.getConfiguration(section, resource);
-  const target = toConfigurationTarget(resolveConfigurationUpdateScope(config.inspect(key)));
-  await config.update(key, value, target);
-  logOrion('info', 'configuration updated', { key: `${section}.${key}`, target: String(target) });
-}
+  const config = vscode.workspace.getConfiguration(section);
+  await config.update(key, value, vscode.ConfigurationTarget.Global);
+  logOrion('info', 'configuration updated', { key: `${section}.${key}`, target: 'Global' });
 
-function getConfigurationResource(): vscode.Uri | undefined {
-  return vscode.window.activeTextEditor?.document.uri ?? vscode.workspace.workspaceFolders?.[0]?.uri;
-}
-
-function toConfigurationTarget(scope: OrionConfigurationUpdateScope): vscode.ConfigurationTarget {
-  switch (scope) {
-    case 'workspaceFolder':
-      return vscode.ConfigurationTarget.WorkspaceFolder;
-    case 'workspace':
-      return vscode.ConfigurationTarget.Workspace;
-    default:
-      return vscode.ConfigurationTarget.Global;
+  const effectiveValue = config.get<string>(key);
+  const inspected = config.inspect(key);
+  if (effectiveValue !== value && (inspected?.workspaceFolderValue !== undefined || inspected?.workspaceValue !== undefined)) {
+    vscode.window.showWarningMessage(
+      `ORION salvou ${section}.${key} nas configuracoes de usuario, mas existe override no workspace/folder vencendo essa escolha. Remova ${section}.${key} de .vscode/settings.json se quiser usar o valor de usuario.`
+    );
+    logOrion('warn', 'configuration workspace override still active', { key: `${section}.${key}`, effectiveValue, savedValue: value });
   }
 }

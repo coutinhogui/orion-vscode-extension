@@ -1,9 +1,10 @@
 # Changelog
 
-## 0.1.12
+## 0.1.13
 
-- Corrigido erro ao salvar `orion.ai.mode` em Folder Settings.
-- As configuracoes ORION agora declaram `scope: resource`, permitindo gravação em workspace/folder settings quando houver override por pasta.
+- `ORION: Configurar IA e Selecionar Modelo` agora salva `orion.ai.mode`, `orion.ollama.model` e `orion.ollama.baseUrl` em User Settings.
+- `ORION: Configurar Workspace` nao grava mais overrides de IA em `.vscode/settings.json`.
+- Adicionado aviso quando um override antigo de workspace/folder continua vencendo o valor salvo em User Settings.
 
 ## 0.1.11
 

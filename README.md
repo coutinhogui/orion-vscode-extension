@@ -4,7 +4,7 @@ ORION - Orquestrador de Riscos, Integracoes, Operacoes e Normas.
 
 Extensao interna para VS Code voltada a equipes de engenharia de dados em banco com foco em riscos financeiros. A extensao funciona localmente por padrao, sem backend externo, sem secrets e sem acesso real a Databricks, producao ou APIs internas.
 
-Versao atual: `0.1.12`.
+Versao atual: `0.1.13`.
 
 ## Recursos
 
@@ -107,7 +107,7 @@ O arquivo `.vsix` gerado pode ser instalado no VS Code por `Extensions: Install 
 Alternativa via CLI do VS Code no Windows:
 
 ```powershell
-& "$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin\code.cmd" --install-extension .\orion-vscode-0.1.12.vsix --force
+& "$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin\code.cmd" --install-extension .\orion-vscode-0.1.13.vsix --force
 ```
 
 Para confirmar a versao instalada:
@@ -140,7 +140,9 @@ Se escolher `Ollama local`, a ORION tambem pede a URL base, consulta `/api/tags`
 - `orion.templates.overwriteExistingFiles`: permite sobrescrever templates existentes. Padrao: `false`.
 - `orion.workspace.defaultDataBase`: base logica usada nos templates Databricks. Padrao: `dev_riscos`.
 
-As configuracoes ORION suportam workspace/folder settings. Isso permite que `ORION: Configurar IA e Selecionar Modelo` atualize o mesmo escopo que esta ativo no workspace aberto.
+O comando guiado `ORION: Configurar IA e Selecionar Modelo` salva `orion.ai.mode`, `orion.ollama.model` e `orion.ollama.baseUrl` em **User Settings**. Isso evita erro de Folder Settings e deixa a escolha do modo consistente entre workspaces.
+
+Se um workspace antigo tiver `orion.ai.mode` ou `orion.ollama.*` dentro de `.vscode/settings.json`, esse override local vence User Settings. Remova essas entradas do `.vscode/settings.json` para a escolha global voltar a aparecer corretamente.
 
 ### Modos de IA
 
@@ -199,7 +201,7 @@ Ao escolher Ollama, a ORION pede a URL base, consulta `${orion.ollama.baseUrl}/a
 
 Use `ORION: Selecionar Modelo Ollama` ou o botao `Modelos Ollama` para ir direto ao fluxo de modelos.
 
-A ORION consulta `${orion.ollama.baseUrl}/api/tags`, mostra os modelos instalados em uma lista e salva:
+A ORION consulta `${orion.ollama.baseUrl}/api/tags`, mostra os modelos instalados em uma lista e salva em User Settings:
 
 - `orion.ai.mode = ollama`
 - `orion.ollama.model = <modelo selecionado>`
@@ -213,7 +215,8 @@ Depois de salvar, a ORION faz um teste rapido com o modelo selecionado e informa
 - `Auto`, `Local` e `Copilot` nao mostram mais configuracoes ou acoes de Ollama.
 - `ORION: Diagnosticar IA` evita testes Ollama quando o modo ativo nao e `ollama`.
 
-## Notas da versao 0.1.12
+## Notas da versao 0.1.13
 
-- Corrige o erro `Unable to write to Folder Settings because orion.ai.mode does not support the folder resource scope`.
-- As configuracoes da ORION agora podem ser gravadas em folder settings quando o workspace usa esse escopo.
+- `ORION: Configurar IA e Selecionar Modelo` passa a salvar escolhas de IA em User Settings.
+- O template `ORION: Configurar Workspace` nao grava mais `orion.ai.mode` nem `orion.ollama.*` em `.vscode/settings.json`.
+- Quando um override antigo no workspace ainda vence o valor de usuario, a ORION avisa para remover a entrada local.

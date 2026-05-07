@@ -54,7 +54,6 @@ const ollama_1 = require("./ollama");
 const diagnostics_1 = require("./diagnostics");
 const output_1 = require("./output");
 const firstUseGuide_1 = require("./firstUseGuide");
-const aiMode_1 = require("./aiMode");
 function registerCommands(context) {
     context.subscriptions.push(vscode.commands.registerCommand('orion.openHelp', () => vscode.commands.executeCommand('orionHelp.focus')), vscode.commands.registerCommand('orion.openFirstUseGuide', openFirstUseGuideCommand), vscode.commands.registerCommand('orion.showLogs', output_1.showOrionLogs), vscode.commands.registerCommand('orion.setupWorkspace', setupWorkspaceCommand), vscode.commands.registerCommand('orion.reviewCurrentFile', reviewCurrentFileCommand), vscode.commands.registerCommand('orion.createDatabricksPipeline', createDatabricksPipelineCommand), vscode.commands.registerCommand('orion.generateCopilotInstructions', generateCopilotInstructionsCommand), vscode.commands.registerCommand('orion.generateTechnicalDocumentation', generateTechnicalDocumentationCommand), vscode.commands.registerCommand('orion.createDotnetApi', createDotnetApiCommand), vscode.commands.registerCommand('orion.createBlazorPage', createBlazorPageCommand), vscode.commands.registerCommand('orion.testOllamaConnection', testOllamaConnectionCommand), vscode.commands.registerCommand('orion.diagnoseAi', diagnoseAiCommand), vscode.commands.registerCommand('orion.configureAi', configureAiCommand), vscode.commands.registerCommand('orion.selectOllamaModel', selectOllamaModelCommand));
 }
@@ -260,23 +259,14 @@ function summarizeFiles(prefix, files) {
     return `${prefix}: ${files.length} arquivo(s) gravado(s).`;
 }
 async function updateOrionConfiguration(section, key, value) {
-    const resource = getConfigurationResource();
-    const config = vscode.workspace.getConfiguration(section, resource);
-    const target = toConfigurationTarget((0, aiMode_1.resolveConfigurationUpdateScope)(config.inspect(key)));
-    await config.update(key, value, target);
-    (0, output_1.logOrion)('info', 'configuration updated', { key: `${section}.${key}`, target: String(target) });
-}
-function getConfigurationResource() {
-    return vscode.window.activeTextEditor?.document.uri ?? vscode.workspace.workspaceFolders?.[0]?.uri;
-}
-function toConfigurationTarget(scope) {
-    switch (scope) {
-        case 'workspaceFolder':
-            return vscode.ConfigurationTarget.WorkspaceFolder;
-        case 'workspace':
-            return vscode.ConfigurationTarget.Workspace;
-        default:
-            return vscode.ConfigurationTarget.Global;
+    const config = vscode.workspace.getConfiguration(section);
+    await config.update(key, value, vscode.ConfigurationTarget.Global);
+    (0, output_1.logOrion)('info', 'configuration updated', { key: `${section}.${key}`, target: 'Global' });
+    const effectiveValue = config.get(key);
+    const inspected = config.inspect(key);
+    if (effectiveValue !== value && (inspected?.workspaceFolderValue !== undefined || inspected?.workspaceValue !== undefined)) {
+        vscode.window.showWarningMessage(`ORION salvou ${section}.${key} nas configuracoes de usuario, mas existe override no workspace/folder vencendo essa escolha. Remova ${section}.${key} de .vscode/settings.json se quiser usar o valor de usuario.`);
+        (0, output_1.logOrion)('warn', 'configuration workspace override still active', { key: `${section}.${key}`, effectiveValue, savedValue: value });
     }
 }
 //# sourceMappingURL=commands.js.map

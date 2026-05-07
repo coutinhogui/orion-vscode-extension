@@ -62,10 +62,6 @@ function buildWorkspaceSetupFiles(defaultDataBase) {
             content: JSON.stringify({
                 'files.eol': '\n',
                 'editor.formatOnSave': true,
-                'orion.ai.mode': 'auto',
-                'orion.ollama.baseUrl': 'http://localhost:11434',
-                'orion.ollama.model': 'qwen2.5-coder:3b',
-                'orion.ollama.autoFallbackToLocal': true,
                 'orion.workspace.defaultDataBase': defaultDataBase
             }, null, 2)
         },

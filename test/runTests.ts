@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { normalizeName, toPascalCase } from '../src/naming';
 import { reviewText } from '../src/review';
-import { buildDatabricksPipelineFiles, buildDotnetApiFiles } from '../src/templates';
+import { buildDatabricksPipelineFiles, buildDotnetApiFiles, buildWorkspaceSetupFiles } from '../src/templates';
 import { renderOrionHelpHtml } from '../src/helpHtml';
 import { buildOllamaChatRequest, buildOllamaFallbackMessage, buildOllamaModelQuickPickItems, buildOllamaReviewRequest, chooseOllamaModel, normalizeOllamaBaseUrl } from '../src/ollama';
 import { buildConversationReply } from '../src/conversation';
-import { shouldFallbackToLocalAnswer, resolveAiMode, resolveConfigurationUpdateScope } from '../src/aiMode';
+import { shouldFallbackToLocalAnswer, resolveAiMode } from '../src/aiMode';
 import { detectResourceIntent } from '../src/resourceIntent';
 import { buildAiDiagnosticsReport } from '../src/diagnostics';
 import { formatLogEntry, summarizeText } from '../src/logging';
@@ -71,23 +71,15 @@ function testHelpViewHasModernSections(): void {
   assert.ok(html.includes('Riscos, integrações, operações e normas'));
 }
 
-function testConfigurationContributionsSupportFolderScope(): void {
-  const manifest = JSON.parse(readFileSync('package.json', 'utf8')) as {
-    contributes?: { configuration?: { properties?: Record<string, { scope?: string }> } };
-  };
-  const properties = manifest.contributes?.configuration?.properties ?? {};
-  const settings = [
-    'orion.ai.mode',
-    'orion.ollama.baseUrl',
-    'orion.ollama.model',
-    'orion.ollama.autoFallbackToLocal',
-    'orion.templates.overwriteExistingFiles',
-    'orion.workspace.defaultDataBase'
-  ];
-
-  for (const setting of settings) {
-    assert.equal(properties[setting]?.scope, 'resource', `${setting} must support folder settings`);
-  }
+function testWorkspaceSetupDoesNotPersistAiProviderSettings(): void {
+  const settingsFile = buildWorkspaceSetupFiles('dev_riscos').find((file) => file.relativePath === '.vscode/settings.json');
+  assert.ok(settingsFile);
+  const settings = JSON.parse(settingsFile.content) as Record<string, unknown>;
+  assert.equal(settings['orion.ai.mode'], undefined);
+  assert.equal(settings['orion.ollama.baseUrl'], undefined);
+  assert.equal(settings['orion.ollama.model'], undefined);
+  assert.equal(settings['orion.ollama.autoFallbackToLocal'], undefined);
+  assert.equal(settings['orion.workspace.defaultDataBase'], 'dev_riscos');
 }
 
 function testIconUsesBradescoInspiredPalette(): void {
@@ -142,14 +134,6 @@ function testAiModeResolutionKeepsExplicitLocalMode(): void {
   assert.equal(shouldFallbackToLocalAnswer(true, true), false);
   assert.equal(shouldFallbackToLocalAnswer(true, false), false);
   assert.equal(shouldFallbackToLocalAnswer(false, true), true);
-}
-
-function testConfigurationUpdateScopeFollowsActiveOverride(): void {
-  assert.equal(resolveConfigurationUpdateScope(undefined), 'global');
-  assert.equal(resolveConfigurationUpdateScope({}), 'global');
-  assert.equal(resolveConfigurationUpdateScope({ workspaceValue: 'auto' }), 'workspace');
-  assert.equal(resolveConfigurationUpdateScope({ workspaceFolderValue: 'auto' }), 'workspaceFolder');
-  assert.equal(resolveConfigurationUpdateScope({ workspaceValue: 'auto', workspaceFolderValue: 'ollama' }), 'workspaceFolder');
 }
 
 function testOllamaFallbackMessage(): void {
@@ -305,12 +289,11 @@ function run(): void {
   testDatabricksPipelineTemplate();
   testDotnetApiTemplate();
   testHelpViewHasModernSections();
-  testConfigurationContributionsSupportFolderScope();
+  testWorkspaceSetupDoesNotPersistAiProviderSettings();
   testIconUsesBradescoInspiredPalette();
   testOllamaHelpers();
   testResourceIntentDetection();
   testAiModeResolutionKeepsExplicitLocalMode();
-  testConfigurationUpdateScopeFollowsActiveOverride();
   testOllamaFallbackMessage();
   testChooseOllamaModel();
   testBuildOllamaModelQuickPickItems();
